@@ -46,14 +46,8 @@ CAFE_API void cafe_graphics_circle(CAFE_VALUE x, CAFE_VALUE y, CAFE_VALUE radius
 CAFE_API void cafe_graphics_triangle(CAFE_VALUE x0, CAFE_VALUE y0, CAFE_VALUE x1, CAFE_VALUE y1, CAFE_VALUE x2, CAFE_VALUE y2, CAFE_DRAW_MODE_ mode);
 // CAFE_API void cafe_graphics_
 
-/* Canvas */
-
 CAFE_API cf_Canvas cafe_canvas(int width,int height);
 CAFE_API void cafe_graphics_draw_canvas(cf_Canvas canvas, cf_Rect *r, CAFE_VALUE x, CAFE_VALUE y);
-
-CAFE_API void cafe_graphics_set_canvas(cf_Canvas canvas);
-
-/* Image */
 
 CAFE_API cf_Image cafe_image(int width, int height, int format);
 CAFE_API cf_Image cafe_image_load(const char *filename);

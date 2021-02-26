@@ -48,6 +48,10 @@ void cafe_graphics_draw_color(cf_Color color) {
   tea_draw_color((te_Color){color.r, color.g, color.b, color.a});
 }
 
+void cafe_graphics_set_canvas(cf_Canvas canvas) {
+  tea_set_canvas(canvas);
+}
+
 void cafe_graphics_rectangle(CAFE_VALUE x, CAFE_VALUE y, CAFE_VALUE w, CAFE_VALUE h, CAFE_DRAW_MODE_ mode) {
   tea_draw_mode(mode);
   tea_draw_rect_(x, y, w, h);
@@ -71,10 +75,6 @@ cf_Canvas cafe_canvas(int w, int h) {
 
 void cafe_graphics_draw_canvas(cf_Canvas canvas, cf_Rect *r, CAFE_VALUE x, CAFE_VALUE y) {
   tea_draw_canvas(canvas, r, tea_point(x, y));
-}
-
-void cafe_graphics_set_canvas(cf_Canvas c) {
-  tea_set_canvas(c);
 }
 
 /* Image */
