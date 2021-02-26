@@ -1,8 +1,8 @@
 CC = gcc
 AR = ar
 SRC = src/cafe.c
-INCLUDE = -Iexternal/tea/src
-MODULES = tea
+INCLUDE = -Imodules/tea/src
+MODULES = tea mocha
 OUT = cafe
 CFLAGS = -std=c99 -Wall -lcafe $(patsubst %,-l%,$(MODULES)) -lSDL2 -lm
 
@@ -28,12 +28,12 @@ $(LIBNAME).a: $(OBJS) $(MODULES)
 run: $(OUT)
 	./$(OUT)
 	
-tea:
-	make libtea.a -C external/tea
-	mv external/tea/libtea.a lib/
+$(MODULES):
+	make lib$@.a -C modules/$@
+	mv modules/$@/lib$@.a lib/
 
 clean_modules:
-	make clean -C external/tea
+	make clean -C modules/tea
 
 clean:
 	rm -f $(OUT)

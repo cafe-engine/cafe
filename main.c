@@ -19,7 +19,7 @@ int main(int argc, char ** argv) {
         cafe_graphics_circle(32, 32, 8, CAFE_FILL);
         cafe_graphics_set_canvas(0);
         
-        cafe_graphics_draw_canvas(canvas, NULL, 0, 64);
+        // cafe_graphics_draw_canvas(canvas, NULL, 0, 64);
 
         cafe_end();
     }
