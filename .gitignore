@@ -1,0 +1,5 @@
+.vscode
+src/*.o
+lib/
+bin/
+*.sublime-*

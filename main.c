@@ -1,18 +1,22 @@
-#include <tea.h>
+#include "src/cafe.h"
 
 int main(int argc, char ** argv) {
-    te_Config conf;
-    tea_config_init(&conf, NULL, 640, 380);
-    tea_init(&conf);
-    te_Point p = tea_point(0, 0);    
-    while (!tea_should_close()) {
-        tea_begin();
-        tea_draw_color(WHITE);
-        
-        if (tea_keyboard_was_pressed(TEA_KEY_A)) p.x -= 10;
-        tea_draw_rect_point(p, tea_point(32, 32));        
-        tea_end();
+    cf_Config c = {0};
+    cafe_init_config(&c, "adventure", 640, 380);
+    cafe_init(&c);
+
+
+    while (!cafe_should_close()) {
+        cafe_begin();
+
+        cafe_graphics_draw_color((cf_Color){255, 255, 255, 255});
+        cafe_graphics_rectangle(0, 0, 32, 32, CAFE_LINE);
+
+        cafe_graphics_draw_color((cf_Color){255, 0, 255, 255});
+        cafe_graphics_circle(32, 32, 8, CAFE_FILL);
+
+        cafe_end();
     }
-    
-    tea_terminate();
+
+    cafe_terminate();
 }

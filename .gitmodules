@@ -1,0 +1,3 @@
+[submodule "external/tea"]
+	path = external/tea
+	url = https://github.com/cafe-engine/tea
