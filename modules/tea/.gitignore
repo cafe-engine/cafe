@@ -1,6 +1,0 @@
-.vscode
-tea
-src/*.o
-*.a
-*.so
-*.sublime-*
