@@ -3,3 +3,4 @@ src/*.o
 lib/
 bin/
 *.sublime-*
+*.tgz

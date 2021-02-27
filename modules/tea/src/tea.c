@@ -162,8 +162,10 @@ struct Tea {
   te_Transform current_transform;
   te_Transform transform[MAX_TRANSFORMS];
 
+  int pixel_formats[TEA_PIXELFORMAT_COUNT];
+
   struct {
-    struct { Uint8 *state, old_state[TEA_KEY_COUNT]; } keyboard;
+    struct { const Uint8 *state; Uint8 old_state[TEA_KEY_COUNT]; } keyboard;
     struct { Uint8 state[TEA_BUTTON_COUNT], old_state[TEA_BUTTON_COUNT]; } mouse;
     Uint8 old_button;    
   } input;
@@ -199,7 +201,8 @@ int tea_config_init(te_Config *conf, const char *title, int width, int height) {
   if (title) strcpy((char*)conf->title, title);
   conf->width = width;
   conf->height = height;
-  conf->flags = SDL_INIT_VIDEO;
+  conf->flags = SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_TIMER | SDL_INIT_EVENTS;
+  conf->render_flags = SDL_RENDERER_ACCELERATED;
   conf->window_flags = SDL_WINDOW_SHOWN;
   conf->render_flags = SDL_RENDERER_ACCELERATED;
 
@@ -222,6 +225,16 @@ Tea* tea_init(te_Config *c) {
   // ctx->input.key_array = SDL_GetKeyboardState(NULL);
   // memcpy(ctx->input.old_key, ctx->input.key_array, TEA_KEY_COUNT);
   // memset(ctx->input.keyboard.state, 0, TEA_KEY_COUNT);
+  ctx->pixel_formats[TEA_PIXELFORMAT_UNKOWN] = 0;
+  ctx->pixel_formats[TEA_RGB] = SDL_PIXELFORMAT_RGB888;
+  ctx->pixel_formats[TEA_BGR] = SDL_PIXELFORMAT_BGR888;
+
+  ctx->pixel_formats[TEA_RGBA] = SDL_PIXELFORMAT_RGBA32;
+  ctx->pixel_formats[TEA_ARGB] = SDL_PIXELFORMAT_ARGB32;
+  ctx->pixel_formats[TEA_BGRA] = SDL_PIXELFORMAT_BGRA32;
+  ctx->pixel_formats[TEA_ABGR] = SDL_PIXELFORMAT_ABGR32;
+
+
   ctx->input.keyboard.state = SDL_GetKeyboardState(NULL);
   memset(ctx->input.keyboard.old_state, 0, TEA_KEY_COUNT);
 
@@ -229,7 +242,7 @@ Tea* tea_init(te_Config *c) {
   memset(ctx->targets, 0, MAX_RTARGETS * sizeof(te_RenderTarget));
 
   ctx->window = tea_window_create((const char*)c->title, c->width, c->height, c->window_flags);
-  ctx->render = tea_render_create(ctx->window, TEA_SOFTWARE_RENDER);
+  ctx->render = tea_render_create(ctx->window, TEA_RENDER_2D);
 
   return ctx;
 }
@@ -293,7 +306,6 @@ int tea_get_framerate() {
 void tea_set_canvas(te_Canvas canvas) {
   te_RenderTarget *target = tea_canvas_render_target(canvas);
   tea_set_render_target(target);
-  
 }
 
 te_Canvas tea_pop_canvas() {
@@ -656,6 +668,36 @@ void tea_draw_canvas(te_Canvas canvas, te_Rect *r, te_Point p) {
   tea_draw_texture(tex, &tea_rect(px, py, w*t->scale.x, h*t->scale.y), &tea_rect(x, y, w, h));
 }
 
+
+
+void tea_draw_canvas_ex(te_Canvas canvas, te_Rect *r, te_Point p, TEA_VALUE angle, te_Point scale, te_Point origin) {
+  te_Texture *tex = tea_canvas_texture(canvas);
+  te_RenderFlip flip = 0;
+  if (scale.x < 0) {
+    scale.x *= -1;
+    flip |= TEA_FLIP_H;
+  }
+
+  if (scale.y < 0) {
+    scale.y *= -1;
+    flip |= TEA_FLIP_V;
+  }
+
+  int x, y;
+  te_Point size;
+  x = y = 0;
+  if (r) {
+    x = r->x;
+    y = r->y;
+    size.x = r->w;
+    size.y = r->h;
+  } else tea_texture_size(tex, &size);
+
+  te_Rect dest = tea_rect(p.x, p.y, size.x*scale.x, size.y*scale.y);
+  te_Rect src = tea_rect(x, y, size.x, size.y);
+  tea_draw_texture_ex(tex, &dest, &src, angle, tea_point(origin.x*scale.x, origin.y*scale.y), flip);
+}
+
 void tea_draw_text(te_Font *font, const char *text, te_Point pos) {
   if (!text) return;
   Tea *tea = tea();
@@ -778,8 +820,10 @@ static int _create_texture(int w, int h, unsigned int format, int access) {
 
 void tea_texture_init(te_Texture *tex, int w, int h, unsigned int format, int access) {
   TE_ASSERT(tex != NULL, "te_Texture cannot be null");
+  TE_ASSERT(format >= 0, "invalid pixel format");
+  TE_ASSERT(format < TEA_PIXELFORMAT_COUNT, "invalid texture format");
   
-  tex->tex = SDL_CreateTexture(tea()->render, format, access, w, h);
+  tex->tex = SDL_CreateTexture(tea()->render, tea()->pixel_formats[format], access, w, h);
   tex->width = w;
   tex->height = h;
 }
@@ -815,7 +859,7 @@ te_Texture* tea_texture_load(const char *str) {
 
   TE_ASSERT(surf != NULL, "Failed to create surface");
 
-  Texture *stex = SDL_CreateTextureFromSurface(t->render, surf);
+  SDL_Texture *stex = SDL_CreateTextureFromSurface(t->render, surf);
 
   TE_ASSERT(stex != NULL, "Failed to create texture");
   SDL_FreeSurface(surf);
@@ -899,9 +943,10 @@ static int _push_rtarget(te_RenderTarget target) {
 static int _create_rtarget(int w, int h, unsigned int format) {
   // te_Canvas c = _create_texture(w, h, format, SDL_TEXTUREACCESS_TARGET);
   te_RenderTarget target = {0};
-  target._tex = SDL_CreateTexture(tea()->render, format, SDL_TEXTUREACCESS_TARGET, w, h);
-  target.width = w;
-  target.height = h;
+  // target._tex = SDL_CreateTexture(tea()->render, tea()->pixel_formats[format], SDL_TEXTUREACCESS_TARGET, w, h);
+  // target.width = w;
+  // target.height = h;
+  tea_texture_init(&target.tex, w, h, format, SDL_TEXTUREACCESS_TARGET);
   // _push_canvas(c);
   return _push_rtarget(target);
 }
@@ -922,7 +967,7 @@ void tea_set_render_target(te_RenderTarget *target) {
 te_Canvas tea_canvas(int width, int height) {
   TE_ASSERT(width > 0, "Canvas width must be greater than zero");
   TE_ASSERT(height > 0, "Canvas height must be greater than zero");
-  te_Canvas canvas = _create_rtarget(width, height, SDL_PIXELFORMAT_RGBA32)+1;
+  te_Canvas canvas = _create_rtarget(width, height, TEA_RGBA)+1;
   // printf("%d\n", canvas);
 
   return canvas;
@@ -1019,10 +1064,10 @@ int tea_font_init(te_Font *font, const void *data, size_t buf_size, int font_siz
 
   // printf("%d %d\n", tw, th);
 
-  SDL_PixelFormat pixel_format;
-  pixel_format.format = SDL_PIXELFORMAT_RGBA32;
+  // SDL_PixelFormat pixel_format;
+  // pixel_format.format = SDL_PIXELFORMAT_RGBA32;
   // font->tex = tea_texture(tea, tw, th, pixel_format.format);
-  int id = _create_texture(tw, th, pixel_format.format, SDL_TEXTUREACCESS_STREAMING);
+  int id = _create_texture(tw, th, TEA_RGBA, SDL_TEXTUREACCESS_STREAMING);
   font->tex = &tea()->textures[id];
 
   SDL_SetTextureBlendMode(font->tex->tex, SDL_BLENDMODE_BLEND);
@@ -1130,14 +1175,14 @@ void tea_error(const char *msg) {
  *******************/
 
 
-static void _key_callback(te_Window* window, int key, int scancode, int action, int mods) {
-  Uint8 *state = &tea()->input.keyboard.state[key];
-  Uint8 *old = &tea()->input.keyboard.old_state[key];
+// static void _key_callback(te_Window* window, int key, int scancode, int action, int mods) {
+//   const Uint8 *state = &tea()->input.keyboard.state[key];
+//   Uint8 *old = &tea()->input.keyboard.old_state[key];
 
-  *old = *state;
-  printf("%d %d %d\n", key, action, *old);
-  *state = action;
-}
+//   *old = *state;
+//   printf("%d %d %d\n", key, action, *old);
+//   *state = action;
+// }
 
 
 int tea_update_input() {

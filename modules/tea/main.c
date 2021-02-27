@@ -51,7 +51,7 @@ int main_loop() {
 
   //te_Texture *ct = tea_canvas_texture(canvas);
   //tea_draw_texture_ex(ct, &tea_rect(0, 0, 160*4, 95*4), NULL, 0, tea_point(0, 0), TEA_FLIP_NONE);
-  tea_draw_canvas(canvas, NULL, tea_point(0, 0));
+  tea_draw_canvas_ex(canvas, NULL, tea_point(0, 0), 0, tea_point(4, 4), tea_point(0, 0));
   
 
   tea_end();
@@ -64,11 +64,15 @@ int main(int argc, char ** argv) {
   tea_config_init(&conf, NULL, 640, 380);
   conf.window_flags |= SDL_WINDOW_RESIZABLE;
 
+  // int a = SDL_
+
   tea_init(&conf);
 
   img = tea_image_load("goblin.png");
   canvas = tea_canvas(160, 95);
   font = tea_font_load("extrude.ttf", 16);
+
+  // printf("%d\n", canvas);
 
 #ifdef __EMSCRIPTEN__
   emscripten_set_main_loop(main_loop, 30, 1);

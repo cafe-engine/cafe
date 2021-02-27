@@ -34,6 +34,10 @@
 #include <SDL2/SDL_opengl.h>
 #endif
 
+#ifdef __unix__
+  #include <endian.h>
+#endif
+
 #define TEA_VERSION "0.1.0"
 #define CAT(a, b) a b
 
@@ -444,21 +448,48 @@ typedef enum {
 } TEA_KEY;
 
 typedef enum {
-  TEA_RED,
-  TEA_GREEN,
-  TEA_BLUE,
-  TEA_ALPHA,
+  // TEA_RED,
+  // TEA_GREEN,
+  // TEA_BLUE,
+  // TEA_ALPHA,
+  // TEA_RGB,
+  // TEA_RGBA,
+
+  TEA_PIXELFORMAT_UNKOWN = 0,
   TEA_RGB,
+  TEA_BGR,
+
   TEA_RGBA,
+  TEA_ARGB,
+  TEA_BGRA,
+  TEA_ABGR,
+
+  // SDL_PIXELFORMAT values
+//   TEA_ARGB8888 = 0x16362004,
+//   TEA_RGBA8888 = 0x16462004,
+//   TEA_ABGR8888 = 0x16762004,
+//   TEA_BGRA8888 = 0x16862004,
+
+// #if __BYTE_ORDER == __BIG_ENDIAN
+//   TEA_RGBA32 = TEA_RGBA8888,
+//   TEA_ARGB32 = TEA_ARGB8888,
+//   TEA_BGRA32 = TEA_BGRA8888,
+//   TEA_ABGR32 = TEA_ABGR8888
+// #else
+//   TEA_RGBA32 = TEA_ABGR8888,
+//   TEA_ARGB32 = TEA_BGRA8888,
+//   TEA_BGRA32 = TEA_ARGB8888,
+//   TEA_ABGR32 = TEA_RGBA8888,
+// #endif
 
   TEA_PIXELFORMAT_COUNT
 } TEA_PIXELFORMAT;
 
 typedef enum {
   TEA_DEFAULT = 0,
-  TEA_SOFTWARE_RENDER = (1 << 0),
-  TEA_HARDWARE_RENDER = (1 << 1),
-  TEA_BATCH_RENDER = (1 << 2)
+  TEA_RENDER_2D = (1 << 0),
+  TEA_RENDER_SDL = (1 << 1),
+  TEA_RENDER_OPENGL = (1 << 2)
 } TEA_RENDER_FLAGS;
 
 typedef enum {
