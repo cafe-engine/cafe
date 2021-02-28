@@ -3,8 +3,11 @@
 #define TEA_VALUE CAFE_VALUE
 #include "tea.h"
 
+#include "mocha.h"
+#include "coffee.h"
+
 void cafe_init_config(cf_Config *conf, const char *title, int width, int height) {
-  if (!conf) return NULL;
+  if (!conf) return;
 
   if (title) strcpy(conf->title, title);
   else strcpy(conf->title, "cafe 0.1.0");

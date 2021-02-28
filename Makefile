@@ -1,19 +1,18 @@
 CC = gcc
 AR = ar
 SRC = src/cafe.c
-INCLUDE = -Imodules/tea/src
-MODULES = tea mocha
+MODULES = tea mocha coffee
 OUT = cafe
-CFLAGS = -std=c99 -Wall -lcafe $(patsubst %,-l%,$(MODULES)) -lSDL2 -lm
+INCLUDE = $(patsubst %,-Imodules/%/src,$(MODULES))
+CFLAGS = -std=c99 -Wall
+LFLAGS = -lcafe $(patsubst %,-l%,$(MODULES)) -lSDL2 -lm
 
 LIBNAME = lib$(OUT)
-
-
 
 OBJS = $(SRC:%.c=%.o)
 
 $(OUT): setup main.c $(LIBNAME).a
-	$(CC) main.c -o bin/$(OUT) -Llib $(CFLAGS) $(INCLUDE)
+	$(CC) main.c -o bin/$(OUT) -Llib $(CFLAGS) $(INCLUDE) $(LFLAGS)
 
 setup:
 	mkdir -p bin
@@ -23,7 +22,7 @@ $(LIBNAME).a: $(OBJS) $(MODULES)
 	$(AR) rcs lib/$(LIBNAME).a src/*.o
 
 %.o: %.c
-	$(CC) -c $< -o $@ $(INCLUDE) $(CFLAGS)
+	$(CC) -c $< -o $@ $(INCLUDE) $(CFLAGS) $(LFLAGS)
 
 run: $(OUT)
 	./$(OUT)

@@ -1,6 +1,10 @@
 #ifndef CAFE_H
 #define CAFE_H
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #define CAFE_API
 #define CAFE_VERSION "0.1.0"
 
