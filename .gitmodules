@@ -1,9 +1,6 @@
 [submodule "modules/coffee"]
 	path = modules/coffee
 	url = https://github.com/cafe-engine/coffee
-[submodule "modules/tea"]
-	path = modules/tea
-	url = https://github.com/cafe-engine/tea
 [submodule "modules/latte"]
 	path = modules/latte
 	url = https://github.com/cafe-engine/latte
