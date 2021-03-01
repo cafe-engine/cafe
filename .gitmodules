@@ -7,3 +7,6 @@
 [submodule "modules/mocha"]
 	path = modules/mocha
 	url = https://github.com/cafe-engine/mocha
+[submodule "modules/tea"]
+	path = modules/tea
+	url = https://github.com/cafe-engine/tea
