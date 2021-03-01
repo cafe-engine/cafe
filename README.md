@@ -9,7 +9,8 @@ Cafe is basically a wrap to other single header modules (that you can use as sin
 - [Tea](https://github.com/cafe-engine/tea): Render, Window and Input modules
 - [Mocha](https://github.com/cafe-engine/mocha): Audio module
 - [Coffee](https://github.com/cafe-engine/coffee): Lisp based language
+- [Latte](https://github.com/cafe-engine/latte): Filesystem and Packaging modules
 
 TODO:
-- Latte: Filesystem and Packaging modules
+
 - Milk: UI module
