@@ -1,0 +1,49 @@
+In file included from src/cafe.c:30:
+modules/tea/src/tea.h:503:9: error: redeclaration of enumerator 'TEA_LINE'
+  503 |         TEA_LINE = 0,
+      |         ^~~~~~~~
+modules/tea/src/tea.h:496:3: note: previous definition of 'TEA_LINE' was here
+  496 |   TEA_LINE = 0,
+      |   ^~~~~~~~
+modules/tea/src/tea.h:504:9: error: redeclaration of enumerator 'TEA_FILL'
+  504 |         TEA_FILL
+      |         ^~~~~~~~
+modules/tea/src/tea.h:497:3: note: previous definition of 'TEA_FILL' was here
+  497 |   TEA_FILL,
+      |   ^~~~~~~~
+In file included from src/cafe.c:33:
+modules/coffee/src/coffee.h:13: warning: "STR" redefined
+   13 | #define STR(x) #x
+      | 
+In file included from src/cafe.c:30:
+modules/tea/src/tea.h:58: note: this is the location of the previous definition
+   58 | #define STR(expr) #expr
+      | 
+In file included from src/cafe.c:33:
+modules/coffee/src/coffee.h:26: warning: "STACK_MAX" redefined
+   26 | #define STACK_MAX 256
+      | 
+In file included from src/cafe.c:30:
+modules/tea/src/tea.h:51: note: this is the location of the previous definition
+   51 | #define STACK_MAX 255
+      | 
+src/cafe.c: In function 'cafe_graphics_draw_canvas':
+src/cafe.c:101:27: warning: passing argument 2 of 'tea_draw_canvas' from incompatible pointer type [-Wincompatible-pointer-types]
+  101 |   tea_draw_canvas(canvas, (te_Point*)r, tea_point(x, y));
+      |                           ^~~~~~~~~~~~
+      |                           |
+      |                           te_Point *
+In file included from src/cafe.c:30:
+modules/tea/src/tea.h:627:56: note: expected 'te_Rect *' but argument is of type 'te_Point *'
+  627 | TE_API void tea_draw_canvas(te_Canvas canvas, te_Rect *r, te_Point p);
+      |                                               ~~~~~~~~~^
+src/cafe.c: In function 'cafe_init':
+src/cafe.c:52:1: warning: control reaches end of non-void function [-Wreturn-type]
+   52 | }
+      | ^
+In file included from src/cafe.c:33:
+At top level:
+modules/coffee/src/coffee.h:72:18: warning: 'opcodes' defined but not used [-Wunused-variable]
+   72 | static cf_OpCode opcodes[] = {
+      |                  ^~~~~~~
+make: *** [Makefile:25: src/cafe.o] Error 1

@@ -7,6 +7,9 @@ int main(int argc, char ** argv) {
     cafe_init(&c);
     cf_Canvas canvas = cafe_canvas(160, 95);
 
+
+    cf_Image img = cafe_image_load("modules/tea/goblin.png");
+
     while (!cafe_should_close()) {
         cafe_begin();
 
@@ -19,7 +22,10 @@ int main(int argc, char ** argv) {
         cafe_graphics_circle(32, 32, 8, CAFE_FILL);
         cafe_graphics_set_canvas(0);
         
-        // cafe_graphics_draw_canvas(canvas, NULL, 0, 64);
+        cafe_graphics_draw_canvas(canvas, NULL, 0, 64);
+
+        cf_Rect r = {0, 0, 16, 16};
+        cafe_graphics_draw_image_ex(img, &r, cafe_point(0, 0), 0, cafe_point(4, 4), cafe_point(0, 0));
 
         cafe_end();
     }

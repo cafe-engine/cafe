@@ -25,7 +25,7 @@ $(LIBNAME).a: $(OBJS) $(MODULES)
 	$(CC) -c $< -o $@ $(INCLUDE) $(CFLAGS) $(LFLAGS)
 
 run: $(OUT)
-	./$(OUT)
+	./bin/$(OUT)
 	
 $(MODULES):
 	make lib$@.a -C modules/$@

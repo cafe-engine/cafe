@@ -1,0 +1,36 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-c",
+      "src/cafe.c",
+      "-o",
+      "src/cafe.o",
+      "-Imodules/tea/src",
+      "-Imodules/mocha/src",
+      "-Imodules/coffee/src",
+      "-std=c99",
+      "-Wall"
+    ],
+    "directory": "/home/s4b0t/cafe",
+    "file": "/home/s4b0t/cafe/src/cafe.c",
+    "output": "/home/s4b0t/cafe/src/cafe.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-c",
+      "main.c",
+      "-o",
+      "bin/cafe",
+      "-std=c99",
+      "-Wall",
+      "-Imodules/tea/src",
+      "-Imodules/mocha/src",
+      "-Imodules/coffee/src"
+    ],
+    "directory": "/home/s4b0t/cafe",
+    "file": "/home/s4b0t/cafe/main.c",
+    "output": "/home/s4b0t/cafe/main.o"
+  }
+]
