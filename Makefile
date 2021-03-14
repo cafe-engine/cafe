@@ -21,9 +21,9 @@ LIBNAME = lib$(NAME)
 SLIBNAME = $(LIBNAME).a
 DLIBNAME = $(LIBNAME).so
 
-BIN_DIR = $(PWD)/bin
-OBJ_DIR = $(PWD)/obj
-LIB_DIR = $(PWD)/lib
+BIN_DIR = bin
+OBJ_DIR = obj
+LIB_DIR = lib
 
 MODDIR = modules
 
