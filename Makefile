@@ -130,10 +130,10 @@ $(OBJ_DIR)/%.d.o: %.c
 	$(CROSS_CC) -c $< -o $@ -fPIC $(INCLUDE) $(CFLAGS)
 
 $(MODULES):
-	make -C $(MODDIR)/$@
+	$(MAKE) -C $(MODDIR)/$@
 
 clean_modules: $(MODS)
-	make clean -C $<
+	$(MAKE) clean -C $<
 
 clean:
 	rm -rf $(OUT)
