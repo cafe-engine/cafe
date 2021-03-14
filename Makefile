@@ -21,9 +21,9 @@ LIBNAME = lib$(NAME)
 SLIBNAME = $(LIBNAME).a
 DLIBNAME = $(LIBNAME).so
 
-export BIN_DIR = $(PWD)/bin
-export OBJ_DIR = $(PWD)/obj
-export LIB_DIR = $(PWD)/lib
+BIN_DIR = $(PWD)/bin
+OBJ_DIR = $(PWD)/obj
+LIB_DIR = $(PWD)/lib
 
 MODDIR = modules
 
