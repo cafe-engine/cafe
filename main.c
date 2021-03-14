@@ -1,5 +1,9 @@
 #include <stdio.h>
-#include "src/cafe.h"
+#include "lua.h"
+#include "lualib.h"
+#include "lauxlib.h"
+
+#include "cafe.h"
 
 int main(int argc, char ** argv) {
     cf_Config c = {0};
@@ -7,6 +11,10 @@ int main(int argc, char ** argv) {
     cafe_init(&c);
     cf_Canvas canvas = cafe_canvas(160, 95);
 
+    lua_State *L = luaL_newstate();
+    luaL_openlibs(L);
+
+    luaL_dofile(L, "init.lua");
 
     cf_Image img = cafe_image_load("modules/tea/goblin.png");
 
