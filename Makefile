@@ -7,8 +7,8 @@ MAIN = main.c
 MODULES = 
 
 PREFIX =
-CC = gcc
-AR = ar
+CC := gcc
+AR := ar
 
 MUSL_BIN ?=
 MUSL_INC ?=
@@ -21,9 +21,9 @@ LIBNAME = lib$(NAME)
 SLIBNAME = $(LIBNAME).a
 DLIBNAME = $(LIBNAME).so
 
-BIN_DIR ?= bin
-OBJ_DIR ?= obj
-LIB_DIR ?= lib
+BIN_DIR := bin
+OBJ_DIR := obj
+LIB_DIR := lib
 
 MODDIR = modules
 
@@ -65,12 +65,12 @@ ifneq ($(MUSL_INC),)
     INCLUDE += -I$(MUSL_INC)
 endif
 
-export MUSL_BIN
-export MUSL_INC
-export MUSL_DIR
-export MUSL_TOOLCHAIN_DIR 
-export MUSL_TARGET 
-export MUSL_CROSS 
+#export MUSL_BIN
+#export MUSL_INC
+#export MUSL_DIR
+#export MUSL_TOOLCHAIN_DIR 
+#export MUSL_TARGET 
+#export MUSL_CROSS 
 
 MODS = $(MODULES:%=$(MODDIR)/%)
 
