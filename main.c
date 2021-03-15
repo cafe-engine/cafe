@@ -1,20 +1,11 @@
 #include <stdio.h>
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
-
 #include "cafe.h"
 
 int main(int argc, char ** argv) {
     cf_Config c = {0};
     cafe_init_config(&c, "adventure", 640, 380);
     cafe_init(&c);
-    cf_Canvas canvas = cafe_canvas(160, 95);
-
-    lua_State *L = luaL_newstate();
-    luaL_openlibs(L);
-
-    luaL_dofile(L, "init.lua");
+    /*cf_Canvas canvas = cafe_canvas(160, 95);
 
     cf_Image img = cafe_image_load("modules/tea/goblin.png");
 
@@ -36,7 +27,8 @@ int main(int argc, char ** argv) {
         cafe_graphics_draw_image_ex(img, &r, cafe_point(0, 0), 0, cafe_point(4, 4), cafe_point(0, 0));
 
         cafe_end();
-    }
+    }*/
+    while (cafe_main_loop());
 
     cafe_terminate();
 }

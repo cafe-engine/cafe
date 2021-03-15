@@ -66,6 +66,8 @@ CAFE_API void cafe_terminate();
 
 CAFE_API int cafe_should_close();
 
+CAFE_API int cafe_main_loop();
+
 CAFE_API void cafe_begin();
 CAFE_API void cafe_end();
 

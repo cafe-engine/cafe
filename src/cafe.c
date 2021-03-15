@@ -32,6 +32,11 @@
 #include "mocha.h"
 #include "coffee.h"
 
+#include "lua/cafe_lua.h"
+
+#define CSTAR_IMPLEMENTATION
+#include "cstar.h"
+
 void cafe_init_config(cf_Config *conf, const char *title, int width, int height) {
         if (!conf) return;
 
@@ -49,10 +54,22 @@ int cafe_init(cf_Config *conf) {
         tea_cfg.window_flags = conf->window_flags;
 
         tea_init(&tea_cfg);
+
+        cafe_lua_init();
 }
 
 void cafe_terminate() {
   tea_terminate();
+}
+
+int cafe_main_loop() {
+    cafe_begin();
+
+    cafe_lua_step();
+
+    cafe_end();
+
+    return !cafe_should_close();
 }
 
 int cafe_should_close() {
