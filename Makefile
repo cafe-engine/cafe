@@ -10,12 +10,12 @@ PREFIX =
 CC = gcc
 AR = ar
 
-MUSL_BIN =
-MUSL_INC =
-MUSL_DIR =
-MUSL_TOOLCHAIN_DIR = 
-MUSL_TARGET = 
-MUSL_CROSS = 
+MUSL_BIN ?=
+MUSL_INC ?=
+MUSL_DIR ?=
+MUSL_TOOLCHAIN_DIR ?= 
+MUSL_TARGET ?= 
+MUSL_CROSS ?= 
 
 LIBNAME = lib$(NAME)
 SLIBNAME = $(LIBNAME).a
@@ -133,6 +133,7 @@ $(MODULES):
 	$(MAKE) -C $(MODDIR)/$@
 
 clean_modules: $(MODS)
+	echo $<
 	$(MAKE) clean -C $<
 
 clean:
