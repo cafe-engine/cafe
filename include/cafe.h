@@ -71,6 +71,9 @@ CAFE_API int cafe_main_loop();
 CAFE_API void cafe_begin();
 CAFE_API void cafe_end();
 
+/**********************
+ * Graphics           *
+ **********************/
 CAFE_API void cafe_graphics_clear(cf_Color color);
 CAFE_API void cafe_graphics_draw_color(cf_Color color);
 CAFE_API void cafe_graphics_set_canvas(cf_Canvas canvas);
@@ -100,5 +103,47 @@ CAFE_API void cafe_graphics_draw_image_ex(cf_Image img, cf_Rect *r, cf_Point p, 
 
 CAFE_API cf_Shader cafe_shader(const char *glsl_shader, int type);
 CAFE_API void cafe_shader_set(cf_Shader shd);
+
+/**********************
+ * Filesystem         *
+ **********************/
+
+CAFE_API int cafe_filesystem_basepath(const char *path);
+
+CAFE_API long cafe_filesystem_size(const char *filename);
+CAFE_API int cafe_filesystem_read(const char *filename, char *out, int size);
+CAFE_API int cafe_filesystem_write(const char *filename, const char *text, int size);
+
+CAFE_API void* cafe_file_open(const char *filename, int mode);
+
+CAFE_API int cafe_file_header(void *fp, void *out);
+CAFE_API int cafe_file_read(void *fp, char *out, int bytes);
+CAFE_API int cafe_file_write(void *fp, const char *text, int bytes);
+
+/**********************
+ * Audio              *
+ **********************/
+
+CAFE_API int cafe_audio_init();
+CAFE_API int cafe_audio_deinit();
+
+CAFE_API void* cafe_audiobuf_load(const char *filename, int usage);
+CAFE_API void cafe_audiobuf_destroy(void *buf);
+
+CAFE_API int cafe_audiobuf_play(void *buf);
+CAFE_API int cafe_audiobuf_pause(void *buf);
+CAFE_API int cafe_audiobuf_stop(void *buf);
+
+CAFE_API int cafe_sound_load(const char *filename);
+
+CAFE_API int cafe_sound_play(int snd);
+CAFE_API int cafe_sound_pause(int snd);
+CAFE_API int cafe_sound_stop(int snd);
+
+CAFE_API int cafe_music_load(const char *filename);
+
+CAFE_API int cafe_music_play(int msc);
+CAFE_API int cafe_music_pause(int msc);
+CAFE_API int cafe_music_stop(int msc);
 
 #endif /* CAFE_H */
