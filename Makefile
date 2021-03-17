@@ -7,7 +7,7 @@ MAIN = main.c
 MODULES = 
 
 PREFIX ?=
-CC := gcc
+CC := cc
 AR := ar
 
 MUSL_BIN ?=
