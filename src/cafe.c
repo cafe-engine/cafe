@@ -31,6 +31,7 @@
 
 #include "mocha.h"
 #include "coffee.h"
+#include "latte.h"
 
 #include "lua/cafe_lua.h"
 
@@ -54,6 +55,7 @@ int cafe_init(cf_Config *conf) {
         tea_cfg.window_flags = conf->window_flags;
 
         tea_init(&tea_cfg);
+        cafe_filesystem_init(".");
 
         cafe_lua_init();
 }
@@ -139,4 +141,43 @@ void cafe_graphics_draw_image(cf_Image img, cf_Rect *r, CAFE_VALUE x, CAFE_VALUE
 void cafe_graphics_draw_image_ex(cf_Image img, cf_Rect *r, cf_Point p, float angle, cf_Point scale, cf_Point origin) {
         te_Point *pp = (te_Point*)&p;
         tea_draw_image_ex(img, (te_Rect*)r, *pp, angle, tea_point(scale.x, scale.y), tea_point(origin.x, origin.y));
+}
+
+
+/**********************
+ * Filesystem         *
+ **********************/
+
+int cafe_filesystem_init(const char *filepath) {
+    la_init(filepath);
+    return 1;
+}
+
+void cafe_filesystem_deinit() {
+    la_deinit();
+}
+
+int cafe_filesystem_basepath(const char *path) {
+    return 1;
+}
+
+long cafe_filesystem_size(const char *filename) {
+}
+
+int cafe_filesystem_read(const char *filename, char *out, int size);
+int cafe_filesystem_write(const char *filename, const char *text, int size);
+
+cf_File* cafe_file_open(const char *filename, int mode) {
+    return (cf_File*)la_fopen(filename, mode);
+}
+
+int cafe_file_header(cf_File *fp, cf_Header *out) {
+    return la_fheader((la_file_t*)fp, out);
+}
+int cafe_file_read(cf_File *fp, char *out, int bytes) {
+    return la_fread((la_file_t*)fp, out, bytes); 
+}
+
+int cafe_file_write(cf_File *fp, const char *text, int bytes) {
+    return la_fwrite((la_file_t*)fp, text, bytes);
 }

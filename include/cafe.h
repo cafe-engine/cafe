@@ -47,11 +47,28 @@ typedef unsigned int cf_Canvas;
 typedef unsigned int cf_Image;
 typedef unsigned int cf_Shader;
 
+typedef void cf_File;
+typedef void cf_Dir;
+
+typedef unsigned int cf_Sound;
+typedef unsigned int cf_Music;
+
 typedef struct { CAFE_VALUE x, y; } cf_Point;
 typedef struct { Byte r, g, b, a; } cf_Color;
 typedef struct { CAFE_VALUE x, y, w, h; } cf_Rect;
 
 typedef enum { CAFE_LINE = 0, CAFE_FILL } CAFE_DRAW_MODE_;
+
+typedef struct cf_Header {
+    char name[100];
+    char linkname[100];
+    int type;
+    int mode;
+    long size;
+    unsigned mtime;
+    unsigned int uid, gid;
+    char uname[32], gname[32];
+} cf_Header;
 
 typedef struct cf_Config {
   char title[128];
@@ -108,17 +125,20 @@ CAFE_API void cafe_shader_set(cf_Shader shd);
  * Filesystem         *
  **********************/
 
+CAFE_API int cafe_filesystem_init(const char *filepath);
+CAFE_API void cafe_filesystem_deinit();
+
 CAFE_API int cafe_filesystem_basepath(const char *path);
 
 CAFE_API long cafe_filesystem_size(const char *filename);
 CAFE_API int cafe_filesystem_read(const char *filename, char *out, int size);
 CAFE_API int cafe_filesystem_write(const char *filename, const char *text, int size);
 
-CAFE_API void* cafe_file_open(const char *filename, int mode);
+CAFE_API cf_File* cafe_file_open(const char *filename, int mode);
 
-CAFE_API int cafe_file_header(void *fp, void *out);
-CAFE_API int cafe_file_read(void *fp, char *out, int bytes);
-CAFE_API int cafe_file_write(void *fp, const char *text, int bytes);
+CAFE_API int cafe_file_header(cf_File *fp, cf_Header *out);
+CAFE_API int cafe_file_read(cf_File *fp, char *out, int bytes);
+CAFE_API int cafe_file_write(cf_File *fp, const char *text, int bytes);
 
 /**********************
  * Audio              *
@@ -134,16 +154,16 @@ CAFE_API int cafe_audiobuf_play(void *buf);
 CAFE_API int cafe_audiobuf_pause(void *buf);
 CAFE_API int cafe_audiobuf_stop(void *buf);
 
-CAFE_API int cafe_sound_load(const char *filename);
+CAFE_API cf_Sound cafe_sound_load(const char *filename);
 
-CAFE_API int cafe_sound_play(int snd);
-CAFE_API int cafe_sound_pause(int snd);
-CAFE_API int cafe_sound_stop(int snd);
+CAFE_API int cafe_sound_play(cf_Sound snd);
+CAFE_API int cafe_sound_pause(cf_Sound snd);
+CAFE_API int cafe_sound_stop(cf_Sound snd);
 
-CAFE_API int cafe_music_load(const char *filename);
+CAFE_API cf_Music cafe_music_load(const char *filename);
 
-CAFE_API int cafe_music_play(int msc);
-CAFE_API int cafe_music_pause(int msc);
-CAFE_API int cafe_music_stop(int msc);
+CAFE_API int cafe_music_play(cf_Music mus);
+CAFE_API int cafe_music_pause(cf_Music mus);
+CAFE_API int cafe_music_stop(cf_Music mus);
 
 #endif /* CAFE_H */

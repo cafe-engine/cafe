@@ -28,6 +28,19 @@ int main(int argc, char ** argv) {
 
         cafe_end();
     }*/
+
+    cf_File *fp = cafe_file_open("README.md", 1);
+
+    cf_Header h;
+    cafe_file_header(fp, &h);
+    long sz = h.size;
+
+    char buf[sz+1];
+    cafe_file_read(fp, buf, sz);
+    buf[sz] = '\0';
+
+    printf("%s\n", buf);
+
     while (cafe_main_loop());
 
     cafe_terminate();
