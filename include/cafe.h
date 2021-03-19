@@ -47,8 +47,9 @@ typedef unsigned int cf_Canvas;
 typedef unsigned int cf_Image;
 typedef unsigned int cf_Shader;
 
-typedef void cf_File;
-typedef void cf_Dir;
+typedef struct la_file_t cf_File;
+typedef struct la_dir_t cf_Dir;
+typedef struct la_vdrive_t cf_VDrive;
 
 typedef unsigned int cf_Sound;
 typedef unsigned int cf_Music;
@@ -134,11 +135,33 @@ CAFE_API long cafe_filesystem_size(const char *filename);
 CAFE_API int cafe_filesystem_read(const char *filename, char *out, int size);
 CAFE_API int cafe_filesystem_write(const char *filename, const char *text, int size);
 
+/* File */
 CAFE_API cf_File* cafe_file_open(const char *filename, int mode);
+CAFE_API void cafe_file_close(cf_File *fp);
+CAFE_API int cafe_file_close_stream(cf_File *fp);
+
+CAFE_API int cafe_file_seek(cf_File *fp, int offset);
+CAFE_API int cafe_file_tell(cf_File *fp);
 
 CAFE_API int cafe_file_header(cf_File *fp, cf_Header *out);
 CAFE_API int cafe_file_read(cf_File *fp, char *out, int bytes);
+
 CAFE_API int cafe_file_write(cf_File *fp, const char *text, int bytes);
+CAFE_API int cafe_file_append(cf_File *fp, const char *text, int bytes);
+CAFE_API int cafe_file_insert(cf_File *fp, const char *text, int bytes);
+
+/* Directory */
+CAFE_API cf_Dir* cafe_dir_open(const char *filename);
+CAFE_API void cafe_dir_close(cf_Dir *dir);
+
+CAFE_API int cafe_dir_rewind(cf_Dir *dir);
+
+CAFE_API int cafe_dir_header(cf_Dir *dir, cf_Header *out);
+CAFE_API int cafe_dir_read(cf_Dir *dir, cf_Header *out);
+
+/* Virtual */
+CAFE_API cf_VDrive* cafe_vdrive_open(const char *filename, int mode);
+CAFE_API void cafe_vdrive_close(cf_VDrive *drv);
 
 /**********************
  * Audio              *

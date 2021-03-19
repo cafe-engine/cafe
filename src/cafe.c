@@ -58,6 +58,7 @@ int cafe_init(cf_Config *conf) {
         cafe_filesystem_init(".");
 
         cafe_lua_init();
+        return 1;
 }
 
 void cafe_terminate() {
@@ -117,7 +118,7 @@ cf_Canvas cafe_canvas(int w, int h) {
 }
 
 void cafe_graphics_draw_canvas(cf_Canvas canvas, cf_Rect *r, CAFE_VALUE x, CAFE_VALUE y) {
-  tea_draw_canvas(canvas, (te_Point*)r, tea_point(x, y));
+  tea_draw_canvas(canvas, (te_Rect*)r, tea_point(x, y));
 }
 
 void cafe_graphics_set_canvas(cf_Canvas c) {
@@ -162,17 +163,33 @@ int cafe_filesystem_basepath(const char *path) {
 }
 
 long cafe_filesystem_size(const char *filename) {
+    cf_File *fp = cafe_file_open(filename, LA_READ_MODE);
+    cf_Header h;
+    cafe_file_header(fp, &h);
+
+    cafe_file_close(fp);
+
+    return h.size;
 }
 
 int cafe_filesystem_read(const char *filename, char *out, int size);
 int cafe_filesystem_write(const char *filename, const char *text, int size);
 
+/* File */
 cf_File* cafe_file_open(const char *filename, int mode) {
     return (cf_File*)la_fopen(filename, mode);
 }
 
+void cafe_file_close(cf_File *fp) {
+    la_fclose((la_file_t*)fp);
+}
+
+int cafe_file_close_stream(cf_File *fp) {
+    return la_fclose_stream((la_file_t*)fp);
+}
+
 int cafe_file_header(cf_File *fp, cf_Header *out) {
-    return la_fheader((la_file_t*)fp, out);
+    return la_fheader((la_file_t*)fp, (la_header_t*)out);
 }
 int cafe_file_read(cf_File *fp, char *out, int bytes) {
     return la_fread((la_file_t*)fp, out, bytes); 
@@ -180,4 +197,58 @@ int cafe_file_read(cf_File *fp, char *out, int bytes) {
 
 int cafe_file_write(cf_File *fp, const char *text, int bytes) {
     return la_fwrite((la_file_t*)fp, text, bytes);
+}
+
+/* Directory */
+
+cf_Dir* cafe_dir_open(const char *filename) {
+    return (cf_Dir*)la_dopen(filename);
+}
+
+void cafe_dir_close(cf_Dir *dir) {
+    la_dclose((la_dir_t*)dir);
+}
+
+int cafe_dir_rewind(cf_Dir *dir) {
+    /* return la_drewind((la_dir_t*)dir); */
+    return 1;
+}
+
+int cafe_dir_header(cf_Dir *dir, cf_Header *out) {
+    return la_dheader((la_dir_t*)dir, (la_header_t*)out);
+}
+
+int cafe_dir_read(cf_Dir *dir, cf_Header *out) {
+    return la_dread((la_dir_t*)dir, (la_header_t*)out);
+}
+
+/* Virtual */
+
+cf_VDrive* cafe_vdrive_open(const char *filename, int mode) {
+    return (cf_VDrive*)la_vopen(filename, mode);
+}
+
+void cafe_vdrive_close(cf_VDrive *drv) {
+    la_vclose((la_vdrive_t*)drv);
+}
+
+/**********************
+ * Audio              *
+ **********************/
+
+int cafe_audio_init() {
+    return mocha_init(0);
+}
+
+int cafe_audio_deinit() {
+    mocha_terminate();
+    return 1;
+}
+
+void* cafe_audiobuf_load(const char *filename, int usage) {
+    return mocha_buffer_load(filename, usage);
+}
+
+void cafe_audiobuf_destroy(void *buf) {
+    mocha_buffer_unload(buf);
 }

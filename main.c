@@ -41,6 +41,16 @@ int main(int argc, char ** argv) {
 
     printf("%s\n", buf);
 
+    cafe_file_close(fp);
+
+    cf_Dir *dir = cafe_dir_open("include/");
+
+    while (cafe_dir_read(dir, &h)) {
+        printf("%s\n", h.name);
+    }
+    cafe_dir_close(dir);
+
+
     while (cafe_main_loop());
 
     cafe_terminate();
