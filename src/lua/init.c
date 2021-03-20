@@ -63,6 +63,19 @@ int luaopen_cafe(lua_State *L) {
 
     luaL_newlib(L, reg);
 
+    struct { char *name; int (*fn)(lua_State*); } libs[] = {
+        {"types", luaopen_types},
+        {"keyboard", luaopen_keyboard},
+        {"graphics", luaopen_graphics},
+        {"filesystem", luaopen_filesystem},
+        {NULL, NULL}
+    };
+
+    for (int i = 0; libs[i].name != NULL; i++) {
+        libs[i].fn(L);
+        lua_setfield(L, -2, libs[i].name);
+    }
+
     return 1;
 }
 /* Graphics */
