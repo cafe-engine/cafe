@@ -1,21 +1,16 @@
-NAME = cstar
+NAME ?= hello
 CSTD = c99
 CFLAGS =
 LFLAGS = 
 MAIN = main.c
 
+TARGET = 
+PREFIX = 
+
 MODULES = 
 
-PREFIX ?=
 CC := cc
 AR := ar
-
-MUSL_BIN ?=
-MUSL_INC ?=
-MUSL_DIR ?=
-MUSL_TOOLCHAIN_DIR ?= 
-MUSL_TARGET ?= 
-MUSL_CROSS ?= 
 
 LIBNAME = lib$(NAME)
 SLIBNAME = $(LIBNAME).a
@@ -46,34 +41,9 @@ FOLDERS = $(OBJ_DIR) $(LIB_DIR) $(BIN_DIR)
 
 CFLAGS =-Wall -std=$(CSTD)
 
-ifneq ($(MUSL_TARGET),)
-    ifneq ($(MUSL_TOOLCHAIN_DIR),)
-    MUSL_BIN = $(MUSL_TOOLCHAIN_DIR)/bin
-    MUSL_INC = $(MUSL_TOOLCHAIN_DIR)/$(MUSL_TARGET)/include
-    endif
-endif
-
-ifneq ($(MUSL_BIN),)
-    ifeq ($(OS),Window_NT)
-    export Path = $(MUSL_BIN);$(Path)
-    else
-    export PATH = $(MUSL_BIN):$(PATH)
-    endif
-endif
-
-ifneq ($(MUSL_INC),)
-    INCLUDE += -I$(MUSL_INC)
-endif
-
-#export MUSL_BIN
-#export MUSL_INC
-#export MUSL_DIR
-#export MUSL_TOOLCHAIN_DIR 
-#export MUSL_TARGET 
-#export MUSL_CROSS 
-
 MODS = $(MODULES:%=$(MODDIR)/%)
 
+PREFIX = $(addprefix $(TARGET),-)
 CROSS_CC = $(PREFIX)$(CC)
 CROSS_AR = $(PREFIX)$(AR)
 
@@ -81,20 +51,22 @@ SLIBOUT = $(SLIBNAME:%=$(LIB_DIR)/$(SLIBNAME))
 DLIBOUT = $(DLIBNAME:%=$(LIB_DIR)/$(DLIBNAME))
 OUT = $(NAME:%=$(BIN_DIR)/%)
 
+CLEAN_MODULES = $(MODULES:%=%.cls)
+
 build: folders $(MODULES) $(OUT)
 
 folders: $(FOLDERS)
 
 all: folders $(SLIBOUT) $(DLIBOUT) $(OUT)
 
-.PHONY: all build folders
+.PHONY: all build folders $(MODULES)
 .SECONDARY: $(SOBJ) $(DOBJ)
 
 
 $(FOLDERS):
 	@mkdir -p $@
 
-$(OUT): $(MAIN) $(SLIBOUT)
+$(OUT): $(MAIN) $(SLIBOUT) 
 	@echo "********************************************************"
 	@echo "** COMPILING $@"
 	@echo "********************************************************"
@@ -132,7 +104,7 @@ $(OBJ_DIR)/%.d.o: %.c
 $(MODULES):
 	$(MAKE) -C $(MODDIR)/$@
 
-clean_modules: $(MODS)
+%.cls: $(MODDIR)/%
 	echo $<
 	$(MAKE) clean -C $<
 
@@ -141,4 +113,4 @@ clean:
 	rm -rf $(DLIBNAME) $(SLIBNAME)
 	rm -rf $(FOLDERS)
 
-clean_all: clean clean_modules
+clean-all: clean $(CLEAN_MODULES)
