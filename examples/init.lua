@@ -23,4 +23,15 @@ function cafe.error()
     print("viji")
 end
 
+function cafe.run()
+    local dt = 0
+    if cafe.load then cafe.load() end
+    while ~cafe.running() do
+        if cafe.update then cafe.update(dt) end
+        if cafe.draw then cafe.draw() end
+    end
+    return 0;
+end
+
 xpcall(function() require "main" end, _error)
+-- xpcall(cafe.run)

@@ -1,7 +1,7 @@
 #include "cafe_lua.h"
 #include "lua.h"
 
-static int lua_cafe_fs_size(lua_State *L) {
+/*static int lua_cafe_fs_size(lua_State *L) {
     const char *filename = luaL_checkstring(L, 1);
 
     long size = cafe_filesystem_size(filename);
@@ -12,6 +12,28 @@ static int lua_cafe_fs_size(lua_State *L) {
 
 static int lua_cafe_fs_read(lua_State *L) {
     return 0;
+}*/
+
+static int lua_cafe_new_file(lua_State *L) {
+    const char *filename = luaL_checkstring(L, 1);
+
+    cf_File **fp = (cf_File**)lua_newuserdata(L, sizeof(*fp));
+    luaL_setmetatable(L, FILE_CLASS);
+
+    *fp = cafe_file_open(filename, 1);
+
+    return 1;
+}
+
+static int lua_cafe_new_dir(lua_State *L) {
+    const char *path = luaL_checkstring(L, 1);
+
+    cf_Dir **fp = (cf_Dir**)lua_newuserdata(L, sizeof(*fp));
+    luaL_setmetatable(L, DIR_CLASS);
+
+    *fp = cafe_dir_open(path);
+
+    return 1;
 }
 
 static int lua_cafe_fs_mkdir(lua_State *L) {
@@ -52,7 +74,7 @@ static int lua_cafe_fs_rm(lua_State *L) {
 static int lua_cafe_fs_print(lua_State *L) {
     const char *filename = luaL_checkstring(L, 1);
 
-    cf_File *fp = cafe_file_open(filename, 0);
+    cf_File *fp = cafe_file_open(filename, 1);
 
     cf_Header h;
     cafe_file_header(fp, &h);
@@ -74,6 +96,8 @@ int luaopen_filesystem(lua_State *L) {
         /*{"size", lua_cafe_fs_size},
         {"read", lua_cafe_fs_read},
         {"write", lua_cafe_fs_write},*/
+        {"File", lua_cafe_new_file},
+        {"Dir", lua_cafe_new_dir},
         {"mkdir", lua_cafe_fs_mkdir},
         {"rmdir", lua_cafe_fs_rmdir},
         {"touch", lua_cafe_fs_touch},

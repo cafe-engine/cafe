@@ -9,6 +9,8 @@
 
 #include "cstar.h"
 
+#define RECT_CLASS "Rect"
+
 #define IMAGE_CLASS "Image"
 #define CANVAS_CLASS "Canvas"
 #define SHADER_CLASS "Shader"

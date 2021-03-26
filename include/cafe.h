@@ -41,6 +41,9 @@ typedef struct Cafe Cafe;
 
 #define cafe_point(x, y) (cf_Point){(x), (y)}
 
+#define CAFE_MAX_TEXTURES 64
+#define CAFE_MAX_RTARGETS 64
+
 typedef enum {
     CAFE_KEY_UNKNOWN = 0,
 
@@ -446,6 +449,8 @@ typedef struct cf_Config {
   unsigned int width, height;
   unsigned int flags;
   unsigned int window_flags;
+  int argc;
+  char ** argv;
 } cf_Config;
 
 CAFE_API void cafe_init_config(cf_Config *conf, const char *title, int width, int height);

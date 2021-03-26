@@ -5,12 +5,13 @@ LFLAGS =
 MAIN = main.c
 
 TARGET = 
-PREFIX = 
+PREFIX ?= 
 
 MODULES = 
+CDEFS ?= 
 
-CC := cc
-AR := ar
+CC ?= cc
+AR ?= ar
 
 LIBNAME = lib$(NAME)
 SLIBNAME = $(LIBNAME).a
@@ -39,11 +40,10 @@ DOBJ = $(OBJ:%.o=%.d.o)
 
 FOLDERS = $(OBJ_DIR) $(LIB_DIR) $(BIN_DIR)
 
-CFLAGS =-Wall -std=$(CSTD)
+CFLAGS += -Wall -std=$(CSTD)
 
 MODS = $(MODULES:%=$(MODDIR)/%)
 
-PREFIX = $(addprefix $(TARGET),-)
 CROSS_CC = $(PREFIX)$(CC)
 CROSS_AR = $(PREFIX)$(AR)
 
@@ -70,7 +70,7 @@ $(OUT): $(MAIN) $(SLIBOUT)
 	@echo "********************************************************"
 	@echo "** COMPILING $@"
 	@echo "********************************************************"
-	$(CROSS_CC) $(MAIN) -o $@ $(INCLUDE) $(CFLAGS) -L$(LIB_DIR) -l$(NAME) $(LFLAGS)
+	$(CROSS_CC) $(MAIN) -o $@ $(INCLUDE) $(CFLAGS) -L$(LIB_DIR) -l$(NAME) $(LFLAGS) $(CDEFS)
 	@echo ""
 
 %.a: $(SOBJ)
@@ -84,7 +84,7 @@ $(OUT): $(MAIN) $(SLIBOUT)
 	@echo "********************************************************"
 	@echo "** CREATING $@"
 	@echo "********************************************************"
-	$(CROSS_CC) -shared -o $@ $(shell find $(OBJ_DIR)/ -name "*.d.o") $(INCLUDE) $(CFLAGS)
+	$(CROSS_CC) -shared -o $@ $(shell find $(OBJ_DIR)/ -name "*.d.o") $(INCLUDE) $(CFLAGS) $(CDEFS)
 	@echo ""
 
 $(OBJ_DIR)/%.s.o: %.c
@@ -92,14 +92,14 @@ $(OBJ_DIR)/%.s.o: %.c
 	@echo "** $(SLIBNAME): COMPILING SOURCE $<"
 	@echo "********************************************************"
 	@mkdir -p '$(@D)'
-	$(CROSS_CC) -c $< -o $@ $(INCLUDE) $(CFLAGS) 
+	$(CROSS_CC) -c $< -o $@ $(INCLUDE) $(CFLAGS) $(CDEFS)
 
 $(OBJ_DIR)/%.d.o: %.c
 	@echo "********************************************************"
 	@echo "** $(DLIBNAME): COMPILING SOURCE $<"
 	@echo "********************************************************"
 	@mkdir -p '$(@D)'
-	$(CROSS_CC) -c $< -o $@ -fPIC $(INCLUDE) $(CFLAGS)
+	$(CROSS_CC) -c $< -o $@ -fPIC $(INCLUDE) $(CFLAGS) $(CDEFS)
 
 $(MODULES):
 	$(MAKE) -C $(MODDIR)/$@

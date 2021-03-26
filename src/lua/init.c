@@ -55,8 +55,22 @@ int cafe_lua_get_version(lua_State *L) {
     return 1;
 }
 
+
+static int lua_cafe_new_rect(lua_State *L) {
+    cf_Rect *r = (cf_Rect*)lua_newuserdata(L, sizeof(*r));
+    luaL_setmetatable(L, RECT_CLASS);
+
+    r->x = luaL_optnumber(L, 1, r->x);
+    r->y = luaL_optnumber(L, 2, r->y);
+    r->w = luaL_optnumber(L, 3, r->w);
+    r->h = luaL_optnumber(L, 4, r->h);
+
+    return 1;
+}
+
 int luaopen_cafe(lua_State *L) {
     luaL_Reg reg[] = {
+        {"Rect", lua_cafe_new_rect},
         {"getVersion", cafe_lua_get_version},
         {NULL, NULL}
     };
