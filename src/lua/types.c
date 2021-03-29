@@ -93,10 +93,10 @@ static int cafe_lua_image_draw(lua_State *L) {
     scale.y = luaL_optnumber(L, arg++, 1);
 
     cf_Point origin;
-    origin.x = luaL_optnumber(L, arg++, 1);
-    origin.y = luaL_optnumber(L, arg++, 1);
+    origin.x = luaL_optnumber(L, arg++, 0);
+    origin.y = luaL_optnumber(L, arg++, 0);
 
-    cafe_graphics_draw_image_ex(*img, r, cafe_point(x, y), angle, scale, origin);
+    cafe_graphics_draw_image_ex(*img, r, CAFE_POINT(x, y), angle, scale, origin);
 
    return 0; 
 }
@@ -147,7 +147,7 @@ static int lua_cafe_canvas_draw(lua_State *L) {
     CAFE_VALUE x = luaL_optnumber(L, arg++, 0);
     CAFE_VALUE y = luaL_optnumber(L, arg++, 0);
     if (args < 5) {
-        cafe_graphics_draw_canvas(*canvas, r, x, y);
+        cafe_graphics_draw_image(*canvas, r, x, y);
         return 0;
     }
 
@@ -157,10 +157,10 @@ static int lua_cafe_canvas_draw(lua_State *L) {
     scale.y = luaL_optnumber(L, arg++, 1);
 
     cf_Point origin;
-    origin.x = luaL_optnumber(L, arg++, 1);
-    origin.y = luaL_optnumber(L, arg++, 1);
+    origin.x = luaL_optnumber(L, arg++, 0);
+    origin.y = luaL_optnumber(L, arg++, 0);
 
-    cafe_graphics_draw_canvas_ex(*canvas, r, cafe_point(x, y), angle, scale, origin);
+    cafe_graphics_draw_image_ex(*canvas, r, CAFE_POINT(x, y), angle, scale, origin);
 
     return 0;
 }

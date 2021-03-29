@@ -26,6 +26,7 @@ CAFE_API int cafe_lua_step();
 CAFE_API int luaopen_cafe(lua_State *L);
 
 CAFE_API int luaopen_audio(lua_State *L);
+CAFE_API int luaopen_timer(lua_State *L);
 CAFE_API int luaopen_graphics(lua_State *L);
 /*CAFE_API int luaopen_input(lua_State *L);*/
 CAFE_API int luaopen_keyboard(lua_State *L);

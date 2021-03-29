@@ -8,46 +8,55 @@ static int cafe_lua_graphics_clear(lua_State *L) {
 }
 
 static int cafe_lua_graphics_setcolor(lua_State *L) {
-    cafe_graphics_draw_color((cf_Color){255, 255, 255, 255});
+    cf_Color col = {255, 255, 255, 255};
+    unsigned char *c = (unsigned char*)&col;
+
+    int i = 0;
+    while (i < lua_gettop(L)) {
+        c[i] = luaL_checknumber(L, i+1);
+        i++;
+    }
+    cafe_graphics_draw_color(col);
+
+    return 0;
+}
+
+static int lua_cafe_graphics_mode(lua_State *L) {
+    int mode = luaL_optnumber(L, 1, CAFE_FILL);
+    cafe_graphics_mode(mode);
 
     return 0;
 }
 
 static int cafe_lua_graphics_circle(lua_State *L) {
-   int mode = CAFE_FILL;
-
    cf_Point pos;
    pos.x = luaL_checknumber(L, 1);
    pos.y = luaL_checknumber(L, 2);
    CAFE_VALUE radius = luaL_checknumber(L, 3);
 
-   cafe_graphics_circle(pos.x, pos.y, radius, mode);
+   cafe_graphics_circle(pos.x, pos.y, radius);
     
    return 0;
 }
 
 static int cafe_lua_graphics_rectangle(lua_State *L) {
-    int mode = CAFE_FILL;
-
     CAFE_VALUE x = luaL_checknumber(L, 1);
     CAFE_VALUE y = luaL_checknumber(L, 2);
     CAFE_VALUE w = luaL_checknumber(L, 3);
     CAFE_VALUE h = luaL_checknumber(L, 4);
 
-    cafe_graphics_rectangle(x, y, w, h, mode);
+    cafe_graphics_rectangle(x, y, w, h);
 
     return 0;
 }
 
 static int cafe_lua_graphics_triangle(lua_State *L) {
-   int mode = CAFE_FILL;
-
    CAFE_VALUE points[6];
    for (int i = 0; i < 6; i++) {
        points[i] = luaL_checknumber(L, i+1);
    }
 
-   cafe_graphics_triangle(points[0], points[1], points[2], points[3], points[4], points[5], mode);           
+   cafe_graphics_triangle(CAFE_POINT(points[0], points[1]), CAFE_POINT(points[2], points[3]), CAFE_POINT(points[4], points[5]));           
     
    return 0;
 }
@@ -82,6 +91,7 @@ int luaopen_graphics(lua_State *L) {
         {"Canvas", cafe_lua_new_canvas},
         {"clear", cafe_lua_graphics_clear},
         {"setColor", cafe_lua_graphics_setcolor},
+        {"setMode", lua_cafe_graphics_mode},
         {"rectangle", cafe_lua_graphics_rectangle},
         {"circle", cafe_lua_graphics_circle},
         {"triangle", cafe_lua_graphics_triangle},

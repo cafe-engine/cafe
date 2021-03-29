@@ -27,6 +27,9 @@ SRC_DIR = src
 INC_DIR = include
 
 INCLUDE =
+ifeq ($(OS),Windows_NT)
+LFLAGS += -mwindows -opengl
+endif
 
 -include config.mak
 

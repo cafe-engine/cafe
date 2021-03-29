@@ -36,6 +36,10 @@ static int lua_cafe_new_dir(lua_State *L) {
     return 1;
 }
 
+static int lua_cafe_fs_basepath(lua_State *L) {
+    lua_pushstring(L, cafe_filesystem_basepath());
+    return 1;
+}
 static int lua_cafe_fs_mkdir(lua_State *L) {
     const char *path = luaL_checkstring(L, 1);
 
@@ -98,6 +102,7 @@ int luaopen_filesystem(lua_State *L) {
         {"write", lua_cafe_fs_write},*/
         {"File", lua_cafe_new_file},
         {"Dir", lua_cafe_new_dir},
+        {"basepath", lua_cafe_fs_basepath},
         {"mkdir", lua_cafe_fs_mkdir},
         {"rmdir", lua_cafe_fs_rmdir},
         {"touch", lua_cafe_fs_touch},

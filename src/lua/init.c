@@ -1,15 +1,22 @@
 #include "cafe_lua.h"
+#include "tea.h"
 
 static lua_State *L;
 
 int cafe_lua_init() {
+    cf_File *fp = cafe_file_open("init.lua", 1);
     L = luaL_newstate();
 
     luaL_openlibs(L);
 
     luaL_requiref(L, "cafe", luaopen_cafe, 1);
 
-    luaL_dofile(L, "init.lua");
+    cf_Header h;
+    cafe_file_header(fp, &h);
+    char buf[h.size+1];
+    cafe_file_read(fp, buf, h.size);
+    buf[h.size] = '\0';
+    luaL_dostring(L, buf);
 
     cafe_lua_load();
     return 1;
@@ -79,6 +86,7 @@ int luaopen_cafe(lua_State *L) {
 
     struct { char *name; int (*fn)(lua_State*); } libs[] = {
         {"types", luaopen_types},
+        {"timer", luaopen_timer},
         {"keyboard", luaopen_keyboard},
         {"graphics", luaopen_graphics},
         {"filesystem", luaopen_filesystem},

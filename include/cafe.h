@@ -39,10 +39,9 @@ typedef struct Cafe Cafe;
   #define CAFE_VALUE float
 #endif
 
-#define cafe_point(x, y) (cf_Point){(x), (y)}
+#define CAFE_POINT(x, y) (cf_Point){(x), (y)}
 
-#define CAFE_MAX_TEXTURES 64
-#define CAFE_MAX_RTARGETS 64
+#define CAFE_MAX_TEXTURES 128
 
 typedef enum {
     CAFE_KEY_UNKNOWN = 0,
@@ -468,12 +467,14 @@ CAFE_API void cafe_end();
  * Graphics           *
  **********************/
 CAFE_API void cafe_graphics_clear(cf_Color color);
+CAFE_API int cafe_graphics_mode(int mode);
+CAFE_API int cafe_graphics_color(cf_Color color);
 CAFE_API void cafe_graphics_draw_color(cf_Color color);
 CAFE_API void cafe_graphics_set_canvas(cf_Canvas canvas);
 
-CAFE_API void cafe_graphics_rectangle(CAFE_VALUE x, CAFE_VALUE y, CAFE_VALUE w, CAFE_VALUE h, CAFE_DRAW_MODE_ mode);
-CAFE_API void cafe_graphics_circle(CAFE_VALUE x, CAFE_VALUE y, CAFE_VALUE radius, CAFE_DRAW_MODE_ mode);
-CAFE_API void cafe_graphics_triangle(CAFE_VALUE x0, CAFE_VALUE y0, CAFE_VALUE x1, CAFE_VALUE y1, CAFE_VALUE x2, CAFE_VALUE y2, CAFE_DRAW_MODE_ mode);
+CAFE_API void cafe_graphics_rectangle(CAFE_VALUE x, CAFE_VALUE y, CAFE_VALUE w, CAFE_VALUE h);
+CAFE_API void cafe_graphics_circle(CAFE_VALUE x, CAFE_VALUE y, CAFE_VALUE radius);
+CAFE_API void cafe_graphics_triangle(cf_Point p0, cf_Point p1, cf_Point p2);
 // CAFE_API void cafe_graphics_
 
 /* Canvas */
@@ -537,7 +538,7 @@ CAFE_API int cafe_joystick_wasreleased(int jid, int button);
 CAFE_API int cafe_filesystem_init(const char *filepath);
 CAFE_API void cafe_filesystem_deinit();
 
-CAFE_API int cafe_filesystem_basepath(const char *path);
+CAFE_API const char* cafe_filesystem_basepath();
 
 CAFE_API long cafe_filesystem_size(const char *filename);
 CAFE_API int cafe_filesystem_read(const char *filename, char *out, int size);

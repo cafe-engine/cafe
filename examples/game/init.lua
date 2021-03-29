@@ -1,4 +1,6 @@
 local traceback = debug.traceback
+local path = cafe.filesystem.basepath()
+package.path = package.path .. ';' .. path .. '/?.lua;' .. path .. '/?/init.lua'
 
 local function _error(msg)
     trace = traceback("", 1)
@@ -7,7 +9,8 @@ local function _error(msg)
 end
 
 local function _step()
-    if cafe.update then cafe.update() end
+    local dt = cafe.timer.delta()
+    if cafe.update then cafe.update(dt) end
     if cafe.draw then cafe.draw() end
 end
 
@@ -24,7 +27,7 @@ function cafe.error()
 end
 
 function cafe.run()
-    local dt = 0
+    local dt = cafe.delta()
     if cafe.load then cafe.load() end
     while ~cafe.running() do
         if cafe.update then cafe.update(dt) end

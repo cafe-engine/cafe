@@ -25,11 +25,10 @@
  **********************************************************************************/
 
 #include "cafe.h"
-#include "SDL_render.h"
-#include <SDL2/SDL_keyboard.h>
+#include "tea.h"
 
 #define TEA_VALUE CAFE_VALUE
-#include "tea.h"
+#include "tea_api.h"
 
 #include "mocha.h"
 #include "coffee.h"
@@ -43,7 +42,7 @@
 
 struct Cafe {
     te_Texture *textures[CAFE_MAX_TEXTURES];
-    te_RenderTarget *targets[CAFE_MAX_RTARGETS];
+    la_vdrive_t *root;
 };
 
 Cafe _cafe_ctx;
@@ -66,7 +65,6 @@ int cafe_init(cf_Config *conf) {
         tea_config_init(&tea_cfg, conf->title, conf->width, conf->height);
 
         memset(cafe()->textures, 0, sizeof(te_Texture*)*CAFE_MAX_TEXTURES);
-        memset(cafe()->targets, 0, sizeof(te_RenderTarget*)*CAFE_MAX_RTARGETS);
 
         tea_cfg.window_flags = conf->window_flags;
 
@@ -79,7 +77,7 @@ int cafe_init(cf_Config *conf) {
 }
 
 void cafe_terminate() {
-  tea_terminate();
+  tea_quit();
 }
 
 int cafe_main_loop() {
@@ -104,51 +102,137 @@ void cafe_end() {
   tea_end();
 }
 
+int cafe_graphics_get_mode() {
+    return tea_get_draw_mode();
+}
+
+int cafe_graphics_mode(int mode) {
+    tea_draw_mode(mode);
+    return 1;
+}
+
 void cafe_graphics_clear(cf_Color color) {
   tea_clear_color((te_Color){color.r, color.g, color.b, color.a});
   tea_clear();
 }
 
 void cafe_graphics_draw_color(cf_Color color) {
-  tea_draw_color((te_Color){color.r, color.g, color.b, color.a});
+    te_Color *col = (te_Color*)&color;
+    tea_draw_color(*col);
 }
 
-void cafe_graphics_rectangle(CAFE_VALUE x, CAFE_VALUE y, CAFE_VALUE w, CAFE_VALUE h, CAFE_DRAW_MODE_ mode) {
-  tea_draw_mode((TEA_DRAW_MODE)mode);
-  tea_draw_rect_(x, y, w, h);
+void cafe_graphics_rectangle(CAFE_VALUE x, CAFE_VALUE y, CAFE_VALUE w, CAFE_VALUE h) {
+  tea_rect(&TEA_RECT(x, y, w, h));
 }
 
-void cafe_graphics_circle(CAFE_VALUE x, CAFE_VALUE y, CAFE_VALUE radius, CAFE_DRAW_MODE_ mode) {
-  tea_draw_mode((TEA_DRAW_MODE)mode);
-  tea_draw_circle(tea_point(x, y), radius);
+void cafe_graphics_circle(CAFE_VALUE x, CAFE_VALUE y, CAFE_VALUE radius) {
+    tea_circle(TEA_POINT(x, y), radius);
 }
 
-void cafe_graphics_triangle(CAFE_VALUE x0, CAFE_VALUE y0, CAFE_VALUE x1, CAFE_VALUE y1, CAFE_VALUE x2, CAFE_VALUE y2, CAFE_DRAW_MODE_ mode) {
-  tea_draw_mode((TEA_DRAW_MODE)mode);
-  tea_draw_triangle(tea_point(x0, y0), tea_point(x1, y1), tea_point(x2, y2));
+void cafe_graphics_triangle(cf_Point p0, cf_Point p1, cf_Point p2) {
+    te_Point *tp0 = (te_Point*)&p0;
+    te_Point *tp1 = (te_Point*)&p1;
+    te_Point *tp2 = (te_Point*)&p2;
+    tea_triangle(*tp0, *tp1, *tp2);
 }
 
+/* Image */
+
+cf_Image _get_texture_free_slot() {
+    int i = 0;
+    while (i < CAFE_MAX_TEXTURES) {
+        if (cafe()->textures[i] == NULL) return i;
+        i++;
+    }
+    cst_error("Texture slot is FULL");
+
+    return -1;
+}
+
+cf_Image cafe_image(int w, int h, int format) {
+    cf_Image img = _get_texture_free_slot();
+    if (img < 0 || img >= CAFE_MAX_TEXTURES) cst_fatal("failed to create cf_Image: %d", img);
+
+    cafe()->textures[img] = tea_create_texture(NULL, w, h, format, TEA_TEXTURE_STATIC);
+    return img+1;
+}
+
+cf_Image cafe_image_load(const char *filename) {
+    char file[100];
+    la_resolve_path(filename, file);
+    cf_Image img = _get_texture_free_slot();
+    if (img < 0 || img >= CAFE_MAX_TEXTURES) cst_fatal("failed to create cf_Image: %d", img);
+    cafe()->textures[img] = tea_load_texture(file, TEA_TEXTURE_STATIC);
+    if (!cafe()->textures[img])
+        cst_fatal("failed to load image: %s", filename);
+    return img+1;
+}
+
+void cafe_graphics_draw_image(cf_Image img, cf_Rect *r, CAFE_VALUE x, CAFE_VALUE y) {
+  /*tea_draw_image(img, (te_Rect*)r, tea_point(x, y));*/
+    if (img <= 0 || img >= CAFE_MAX_TEXTURES) cst_fatal("invalid cf_Image: %d", img);
+    img--;
+    te_Texture *tex = cafe()->textures[img];
+    te_Point size;
+
+    te_TextureInfo info;
+    tea_texture_info(tex, &info);
+    size.x = info.size.w;
+    size.y = info.size.h;
+    if (r) {
+        size.x = r->w;
+        size.y = r->h;
+    }
+    te_Transform t;
+    tea_get_transform(&t);
+
+    if (!tea_texture(tex, &TEA_RECT(x, y, size.x, size.y), (te_Rect*)r)) {
+        cst_fatal("failed to draw texture: NULL");
+    }
+}
+
+void cafe_graphics_draw_image_ex(cf_Image img, cf_Rect *r, cf_Point p, float angle, cf_Point scale, cf_Point origin) {
+    if (img < 0 || img >= CAFE_MAX_TEXTURES) cst_fatal("invalid cf_Image: %d", img);
+    int x, y;
+    int flip = TEA_FLIP_NONE;
+    x = y = 0;
+    img--;
+    te_Point size;
+    te_Texture *tex = cafe()->textures[img];
+    te_TextureInfo info;
+    tea_texture_info(tex, &info);
+    size.x = info.size.w;
+    size.y = info.size.h;
+    if (r) {
+        x = r->x;
+        y = r->y;
+        size.x = r->w;
+        size.y = r->h;
+    }
+    te_Transform t;
+    tea_get_transform(&t);
+    if (scale.x < 0) {
+        scale.x = fabs(scale.x);
+        flip = TEA_FLIP_H;
+    }
+    if (scale.y < 0) {
+        scale.y = fabs(scale.y);
+        flip = TEA_FLIP_V;
+    }
+
+    tea_texture_ex(tex, &TEA_RECT(p.x, p.y, size.x*scale.x, size.y*scale.y), (te_Rect*)r, angle, TEA_POINT(origin.x, origin.y), flip);
+}
 /* Canvas */
 
-cf_Canvas _get_rtarget_free_slot() {
-    int i = 0;
-    while (i < CAFE_MAX_RTARGETS) {
-       if (cafe()->targets[i] == NULL) return i; 
-       i++;
-    }
-    cst_error("Render Target slot is FULL");
-
-    return -1; 
-}
-
 cf_Canvas cafe_canvas(int w, int h) {
-    cf_Canvas canvas = _get_rtarget_free_slot();
-    if (canvas < 0 || canvas > CAFE_MAX_RTARGETS) cst_fatal("failed to create cf_Canvas: %d", canvas);
-    cafe()->targets[canvas] = tea_render_target(w, h, TEA_RGBA);
+    cf_Canvas canvas = _get_texture_free_slot();
+    if (canvas < 0 || canvas > CAFE_MAX_TEXTURES) cst_fatal("failed to create cf_Canvas: %d", canvas);
+    cafe()->textures[canvas] = tea_create_texture(NULL, w, h, TEA_RGBA, TEA_TEXTURE_TARGET);
 
     return canvas+1;
 }
 
+#if 0
 void cafe_graphics_draw_canvas(cf_Canvas canvas, cf_Rect *r, CAFE_VALUE x, CAFE_VALUE y) {
     // tea_draw_canvas(canvas, (te_Rect*)r, tea_point(x, y));
     if (canvas <= 0 || canvas > CAFE_MAX_RTARGETS) cst_tracefatal("invalid cf_Canvas");
@@ -204,85 +288,17 @@ void cafe_graphics_draw_canvas_ex(cf_Canvas canvas, cf_Rect *r, cf_Point pos, CA
     te_Rect src = tea_rect(x, y, size.x, size.y);
     tea_draw_texture_ex(tex, &dest, &src, angle, tea_point(origin.x*scale.x, origin.y*scale.y), flip);
 }
+#endif
 
 void cafe_graphics_set_canvas(cf_Canvas c) {
     /*tea_set_canvas(c);*/
-    if (c < 0 || c > CAFE_MAX_RTARGETS) cst_fatal("invalid cf_Canvas: %d", c);
-    te_RenderTarget *target = NULL;
-    if (c > 0) target = cafe()->targets[c-1];
+    if (c < 0 || c > CAFE_MAX_TEXTURES) cst_fatal("invalid cf_Canvas: %d", c);
+    te_Texture *target = NULL;
+    if (c > 0) target = cafe()->textures[c-1];
 
-    tea_set_render_target(target);
+    tea_set_target(target);
 }
 
-/* Image */
-
-cf_Image _get_texture_free_slot() {
-    int i = 0;
-    while (i < CAFE_MAX_TEXTURES) {
-        if (cafe()->textures[i] == NULL) return i;
-        i++;
-    }
-    cst_error("Texture slot is FULL");
-
-    return -1;
-}
-
-cf_Image cafe_image(int w, int h, int format) {
-    cf_Image img = _get_texture_free_slot();
-    if (img < 0 || img >= CAFE_MAX_TEXTURES) cst_fatal("failed to create cf_Image: %d", img);
-
-    cafe()->textures[img] = tea_texture(w, h, format, SDL_TEXTUREACCESS_STATIC);
-    return img+1;
-}
-
-cf_Image cafe_image_load(const char *filename) {
-    char file[100];
-    la_resolve_path(filename, file);
-    cf_Image img = _get_texture_free_slot();
-    if (img < 0 || img >= CAFE_MAX_TEXTURES) cst_fatal("failed to create cf_Image: %d", img);
-    cafe()->textures[img] = tea_texture_load(file);
-    return img+1;
-}
-
-void cafe_graphics_draw_image(cf_Image img, cf_Rect *r, CAFE_VALUE x, CAFE_VALUE y) {
-  /*tea_draw_image(img, (te_Rect*)r, tea_point(x, y));*/
-    if (img <= 0 || img >= CAFE_MAX_TEXTURES) cst_fatal("invalid cf_Image: %d", img);
-    img--;
-    te_Texture *tex = cafe()->textures[img];
-    te_Point size;
-    if (r) {
-        size.x = r->w;
-        size.y = r->h;
-    } else tea_texture_size(tex, &size);
-    te_Transform t = tea_get_transform();
-
-    TEA_VALUE px, py;
-    px = x - t.origin.x + t.translate.x;
-    py = y - t.origin.y + t.translate.y;
-
-    tea_draw_texture(tex, &tea_rect(px, py, size.x*t.scale.x, size.y*t.scale.y), (te_Rect*)r);
-}
-
-void cafe_graphics_draw_image_ex(cf_Image img, cf_Rect *r, cf_Point p, float angle, cf_Point scale, cf_Point origin) {
-    if (img < 0 || img >= CAFE_MAX_TEXTURES) cst_fatal("invalid cf_Image: %d", img);
-    int x, y;
-    x = y = 0;
-    te_Point size;
-    te_Texture *tex = cafe()->textures[img];
-    if (r) {
-        x = r->x;
-        y = r->y;
-        size.x = r->w;
-        size.y = r->h;
-    } else tea_texture_size(tex, &size);
-    te_Transform t = tea_get_transform();
-
-    CAFE_VALUE px, py;
-    px = p.x - t.origin.x + t.translate.x;
-    py = p.y - t.origin.y + t.translate.y;
-
-    tea_draw_texture(tex, &tea_rect(px, py, size.x*t.scale.x, size.y*t.scale.y), &tea_rect(x, y, size.x, size.y));
-}
 
 /**********************
  * Input              *
@@ -319,7 +335,10 @@ int cafe_mouse_ypos(int *y) {
     return tea_mouse_y();
 }
 
-int cafe_mouse_pos(cf_Point *out);
+int cafe_mouse_pos(cf_Point *out) {
+    if (!out) return 0;
+    return tea_mouse_pos(&out->x, &out->y);
+}
 
 int cafe_mouse_isdown(int button) {
     return tea_mouse_is_down(button);
@@ -341,25 +360,46 @@ int cafe_mouse_wasreleased(int button) {
 float cafe_joystick_axis(int jid, int axis) {
     return 0.0f;
 }
-int cafe_joystick_isdown(int jid, int button);
-int cafe_joystick_isup(int jid, int button);
-int cafe_joystick_waspressed(int jid, int button);
-int cafe_joystick_wasreleased(int jid, int button);
+
+int cafe_joystick_isdown(int jid, int button) {
+    return tea_joystick_is_up(jid, button);
+}
+
+int cafe_joystick_isup(int jid, int button) {
+    return tea_joystick_is_down(jid, button);
+}
+
+int cafe_joystick_waspressed(int jid, int button) {
+    return tea_joystick_was_pressed(jid, button);
+}
+
+int cafe_joystick_wasreleased(int jid, int button) {
+    return tea_joystick_was_released(jid, button);
+}
 
 /**********************
  * Filesystem         *
  **********************/
 
 int cafe_filesystem_init(const char *filepath) {
-    return la_init(filepath);
+    if (!la_init(filepath)) {
+        cst_error("failed to init Latte");
+        return 0;
+    }
+    la_header_t h;
+    la_header(filepath, &h);
+    if (h.type == LA_TREG) cafe()->root = la_vopen(filepath, LA_READ_MODE);
+    else cafe()->root = la_vmount(filepath, LA_READ_MODE);
+
+    return 1;
 }
 
 void cafe_filesystem_deinit() {
     la_deinit();
 }
 
-int cafe_filesystem_basepath(const char *path) {
-    return 1;
+const char* cafe_filesystem_basepath() {
+    return latte()->basedir;
 }
 
 long cafe_filesystem_size(const char *filename) {
@@ -468,11 +508,15 @@ void cafe_vdrive_close(cf_VDrive *drv) {
  * Audio              *
  **********************/
 
+void* cafe_audio(void *data, long size, int usage) {
+    return mocha_buffer(data, size, usage);
+}
 
 void* cafe_audio_load(const char *filename, int usage) {
-    char file[100];
-    la_resolve_path(filename, file);
-    return mocha_buffer_load(file, usage);
+    char rpath[100];
+    la_resolve_path(filename, rpath);
+
+    return mocha_buffer_load(rpath, usage);
 }
 
 void cafe_audio_destroy(void *buf) {
