@@ -417,6 +417,7 @@ typedef unsigned char Byte;
 typedef unsigned int cf_Canvas;
 typedef unsigned int cf_Image;
 typedef unsigned int cf_Shader;
+typedef struct te_Font cf_Font;
 
 typedef struct la_file_t cf_File;
 typedef struct la_dir_t cf_Dir;
@@ -476,6 +477,7 @@ CAFE_API void cafe_graphics_rectangle(CAFE_VALUE x, CAFE_VALUE y, CAFE_VALUE w, 
 CAFE_API void cafe_graphics_circle(CAFE_VALUE x, CAFE_VALUE y, CAFE_VALUE radius);
 CAFE_API void cafe_graphics_triangle(cf_Point p0, cf_Point p1, cf_Point p2);
 // CAFE_API void cafe_graphics_
+CAFE_API int cafe_graphics_print(cf_Font *font, const char *text, CAFE_VALUE x, CAFE_VALUE y);
 
 /* Canvas */
 
@@ -555,7 +557,7 @@ CAFE_API int cafe_filesystem_isdir(const char *path);
 
 /* File */
 CAFE_API cf_File* cafe_file_open(const char *filename, int mode);
-CAFE_API void cafe_file_close(cf_File *fp);
+CAFE_API int cafe_file_close(cf_File *fp);
 CAFE_API int cafe_file_close_stream(cf_File *fp);
 
 CAFE_API int cafe_file_seek(cf_File *fp, int offset);
@@ -587,8 +589,8 @@ CAFE_API void cafe_vdrive_close(cf_VDrive *drv);
 
 
 /* Audio Buffer */
-CAFE_API void* cafe_audio_load(const char *filename, int usage);
-CAFE_API void cafe_audio_destroy(void *buf);
+CAFE_API cf_Audio* cafe_audio_load(const char *filename, int usage);
+CAFE_API void cafe_audio_destroy(cf_Audio *buf);
 
 CAFE_API int cafe_audio_play(cf_Audio *buf);
 CAFE_API int cafe_audio_pause(cf_Audio *buf);

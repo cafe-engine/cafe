@@ -13,6 +13,7 @@ end
 function cafe.draw()
     canvas:set()
     cafe.graphics.clear()
+    cafe.graphics.print("press X to jump")
     cafe.graphics.setMode(1)
     cafe.graphics.rectangle(0, floor_y, 160, 16)
     player:draw()

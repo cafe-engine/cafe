@@ -23,7 +23,6 @@
  * SOFTWARE.
  *
  **********************************************************************************/
-
 #include "cafe.h"
 #include "tea.h"
 
@@ -42,7 +41,8 @@
 
 struct Cafe {
     te_Texture *textures[CAFE_MAX_TEXTURES];
-    la_vdrive_t *root;
+    la_vfs_t *root;
+    te_Font *font;
 };
 
 Cafe _cafe_ctx;
@@ -69,8 +69,19 @@ int cafe_init(cf_Config *conf) {
         tea_cfg.window_flags = conf->window_flags;
 
         tea_init(&tea_cfg);
+        mocha_init(0);
         int has_argv = conf->argv && conf->argv[1];
-        cafe_filesystem_init(has_argv ? conf->argv[1] : ".");
+        cafe_filesystem_init(has_argv ? conf->argv[1] : "game.tar");
+
+        cf_File *fp = cafe_file_open("font.ttf", LA_READ_MODE);
+
+        cf_Header h;
+        cafe_file_header(fp, &h);
+        char out[h.size+1];
+        cafe_file_read(fp, out, h.size);
+        out[h.size] = '\0';
+
+        cafe()->font = tea_create_font(out, h.size, 16);
 
         cafe_lua_init();
         return 1;
@@ -136,6 +147,12 @@ void cafe_graphics_triangle(cf_Point p0, cf_Point p1, cf_Point p2) {
     tea_triangle(*tp0, *tp1, *tp2);
 }
 
+int cafe_graphics_print(cf_Font *font, const char *text, CAFE_VALUE x, CAFE_VALUE y) {
+    if (!font) font = cafe()->font;
+    tea_print((te_Font*)font, text, x, y); 
+    return 1;
+}
+
 /* Image */
 
 cf_Image _get_texture_free_slot() {
@@ -159,10 +176,18 @@ cf_Image cafe_image(int w, int h, int format) {
 
 cf_Image cafe_image_load(const char *filename) {
     char file[100];
-    la_resolve_path(filename, file);
     cf_Image img = _get_texture_free_slot();
     if (img < 0 || img >= CAFE_MAX_TEXTURES) cst_fatal("failed to create cf_Image: %d", img);
-    cafe()->textures[img] = tea_load_texture(file, TEA_TEXTURE_STATIC);
+    cf_File *fp = cafe_file_open(filename, LA_READ_MODE);
+    if (!fp) la_fatal("failed to load image: %s", filename);
+    cf_Header h;
+    cafe_file_header(fp, &h);
+
+    char out[h.size+1];
+    cafe_file_read(fp, out, h.size);
+    out[h.size] = '\0';
+    cafe()->textures[img] = tea_load_texture_from_memory(out, h.size, TEA_TEXTURE_STATIC);
+    cafe_file_close(fp);
     if (!cafe()->textures[img])
         cst_fatal("failed to load image: %s", filename);
     return img+1;
@@ -382,14 +407,31 @@ int cafe_joystick_wasreleased(int jid, int button) {
  **********************/
 
 int cafe_filesystem_init(const char *filepath) {
-    if (!la_init(filepath)) {
+    char path[100];
+    char file[100];
+    file[0] = '\0';
+    if (!filepath) strcpy(path, ".");
+    else strcpy(path, filepath);
+
+    char *str = strstr(path, ".tar");
+    if (str) {
+       while (*str != '/' && str != path) str--; 
+       if (*str == '/') str++;
+       strcpy(file, str);
+       int pathlen = (char*)str - (char*)path; 
+       la_log("%d", pathlen);
+       if (pathlen > 0) { memcpy(path, filepath, pathlen); path[pathlen] = '\0'; }
+       else strcpy(path, ".");
+    }
+    if (!la_init(path)) {
         cst_error("failed to init Latte");
         return 0;
     }
-    la_header_t h;
-    la_header(filepath, &h);
-    if (h.type == LA_TREG) cafe()->root = la_vopen(filepath, LA_READ_MODE);
-    else cafe()->root = la_vmount(filepath, LA_READ_MODE);
+    cafe()->root = NULL;
+    if (file[0]) {
+        la_log("%s", file);
+        cafe()->root = la_vopen(file, LA_READ_MODE);
+    }
 
     return 1;
 }
@@ -441,14 +483,17 @@ int cafe_filesystem_isdir(const char *filename) {
 
 /* File */
 cf_File* cafe_file_open(const char *filename, int mode) {
+    if (cafe()->root) return (cf_File*)la_vfopen(cafe()->root, filename);
     return (cf_File*)la_fopen(filename, mode);
 }
 
-void cafe_file_close(cf_File *fp) {
-    la_fclose((la_file_t*)fp);
+int cafe_file_close(cf_File *fp) {
+    if (cafe()->root) return 1;
+    return la_fclose((la_file_t*)fp);
 }
 
 int cafe_file_close_stream(cf_File *fp) {
+    if (cafe()->root) return 1;
     return la_fclose_stream((la_file_t*)fp);
 }
 
@@ -501,25 +546,30 @@ cf_VDrive* cafe_vdrive_open(const char *filename, int mode) {
 }
 
 void cafe_vdrive_close(cf_VDrive *drv) {
-    la_vclose((la_vdrive_t*)drv);
+    la_vclose((la_vfs_t*)drv);
 }
 
 /**********************
  * Audio              *
  **********************/
 
-void* cafe_audio(void *data, long size, int usage) {
+cf_Audio* cafe_audio(void *data, long size, int usage) {
     return mocha_buffer(data, size, usage);
 }
 
-void* cafe_audio_load(const char *filename, int usage) {
-    char rpath[100];
-    la_resolve_path(filename, rpath);
+cf_Audio* cafe_audio_load(const char *filename, int usage) {
+    cf_File *fp = cafe_file_open(filename, LA_READ_MODE);
+    cf_Header h;
+    cafe_file_header(fp, &h);
 
-    return mocha_buffer_load(rpath, usage);
+    void *data = malloc(h.size);
+    cafe_file_read(fp, data, h.size);
+    la_log("%d %s", h.size, h.name);
+
+    return cafe_audio(data, h.size, 0);
 }
 
-void cafe_audio_destroy(void *buf) {
+void cafe_audio_destroy(cf_Audio *buf) {
     mocha_buffer_unload(buf);
 }
 

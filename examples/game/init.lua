@@ -2,6 +2,22 @@ local traceback = debug.traceback
 local path = cafe.filesystem.basepath()
 package.path = package.path .. ';' .. path .. '/?.lua;' .. path .. '/?/init.lua'
 
+
+local function customload(modulename)
+    local errmsg = ""
+    local modulepath = string.gsub(modulename, "%.", "/")
+    local filename = modulepath .. ".lua"
+    local file = cafe.filesystem.File(filename)
+
+    if file then
+        return assert(load(assert(file:read()), filename)) 
+    end
+    errmsg = errmsg .. "\n\t[cafe] no file '" .. filename .. "'"
+    return errmsg
+end
+table.insert(package.searchers, 1, customload)
+
+
 local function _error(msg)
     trace = traceback("", 1)
     print(msg, trace)

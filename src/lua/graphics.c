@@ -85,6 +85,15 @@ static int cafe_lua_new_canvas(lua_State *L) {
     return 1;
 }
 
+static int cafe_lua_graphics_print(lua_State *L) {
+    const char *text = luaL_checkstring(L, 1);
+    CAFE_VALUE x = luaL_optnumber(L, 2, 0);
+    CAFE_VALUE y = luaL_optnumber(L, 3, 0);
+    cafe_graphics_print(NULL, text, x, y);
+
+    return 0;
+}
+
 int luaopen_graphics(lua_State *L) {
     luaL_Reg reg[] = {
         {"Image", cafe_lua_new_image},
@@ -95,6 +104,7 @@ int luaopen_graphics(lua_State *L) {
         {"rectangle", cafe_lua_graphics_rectangle},
         {"circle", cafe_lua_graphics_circle},
         {"triangle", cafe_lua_graphics_triangle},
+        {"print", cafe_lua_graphics_print},
         {NULL, NULL}
     };
 
