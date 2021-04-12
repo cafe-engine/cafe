@@ -42,6 +42,7 @@ typedef struct Cafe Cafe;
 #define CAFE_POINT(x, y) (cf_Point){(x), (y)}
 
 #define CAFE_MAX_TEXTURES 128
+#define CAFE_MAX_AUDIO 64
 
 typedef enum {
     CAFE_KEY_UNKNOWN = 0,
@@ -423,7 +424,7 @@ typedef struct la_file_t cf_File;
 typedef struct la_dir_t cf_Dir;
 typedef struct la_vdrive_t cf_VDrive;
 
-typedef struct mo_AudioBuffer cf_Audio;
+typedef unsigned int cf_Audio;
 typedef unsigned int cf_Sound;
 typedef unsigned int cf_Music;
 
@@ -587,14 +588,15 @@ CAFE_API void cafe_vdrive_close(cf_VDrive *drv);
  * Audio              *
  **********************/
 
+CAFE_API cf_Audio cafe_audio_free_slot();
 
 /* Audio Buffer */
-CAFE_API cf_Audio* cafe_audio_load(const char *filename, int usage);
-CAFE_API void cafe_audio_destroy(cf_Audio *buf);
+CAFE_API cf_Audio cafe_audio_load(const char *filename, int usage);
+CAFE_API int cafe_audio_destroy(cf_Audio buf);
 
-CAFE_API int cafe_audio_play(cf_Audio *buf);
-CAFE_API int cafe_audio_pause(cf_Audio *buf);
-CAFE_API int cafe_audio_stop(cf_Audio *buf);
+CAFE_API int cafe_audio_play(cf_Audio buf);
+CAFE_API int cafe_audio_pause(cf_Audio buf);
+CAFE_API int cafe_audio_stop(cf_Audio buf);
 
 /* Sound */
 CAFE_API cf_Sound cafe_sound_load(const char *filename);

@@ -8,8 +8,6 @@ int main(int argc, char ** argv) {
     c.argv = argv;
     c.window_flags |= 1; // RESIZABLE
     cafe_init(&c);
-    cf_Audio *buf = cafe_audio_load("assets/music.wav", 0);
-    cafe_audio_play(buf);
 
     while (cafe_main_loop());
 

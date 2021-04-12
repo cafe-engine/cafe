@@ -11,6 +11,10 @@
 
 #define RECT_CLASS "Rect"
 
+#define AUDIO_CLASS "Audio"
+#define SOUND_CLASS "Sound"
+#define MUSIC_CLASS "Music"
+
 #define IMAGE_CLASS "Image"
 #define CANVAS_CLASS "Canvas"
 #define SHADER_CLASS "Shader"

@@ -40,6 +40,14 @@ static int lua_cafe_fs_basepath(lua_State *L) {
     lua_pushstring(L, cafe_filesystem_basepath());
     return 1;
 }
+
+static int lua_cafe_fs_exists(lua_State *L) {
+    const char *filepath = luaL_checkstring(L, 1);
+    int res = cafe_filesystem_isfile(filepath) | cafe_filesystem_isdir(filepath);
+    lua_pushboolean(L, res);
+    return 1;
+}
+
 static int lua_cafe_fs_mkdir(lua_State *L) {
     const char *path = luaL_checkstring(L, 1);
 
@@ -102,6 +110,7 @@ int luaopen_filesystem(lua_State *L) {
         {"write", lua_cafe_fs_write},*/
         {"File", lua_cafe_new_file},
         {"Dir", lua_cafe_new_dir},
+        {"exists", lua_cafe_fs_exists},
         {"basepath", lua_cafe_fs_basepath},
         {"mkdir", lua_cafe_fs_mkdir},
         {"rmdir", lua_cafe_fs_rmdir},

@@ -1,4 +1,4 @@
-local Class = require "objects.class"
+local Class = require "libs.class"
 local Player = Class:extend("Player")
 
 function Player:constructor(x, y)
@@ -6,6 +6,7 @@ function Player:constructor(x, y)
   self.y = y or 0
   self.speed = 80
   self.gravity = 80
+  self.jump_force = 80
   self.velocity = {x = 0, y = 0}
   self.image = cafe.graphics.Image("assets/knight.png")
   self.size = 32
@@ -48,7 +49,7 @@ function Player:update(dt)
   end
 
   if cafe.keyboard.wasPressed("x") then
-    self.velocity.y = -self.gravity
+    self.velocity.y = -self.jump_force
   end
 
   local next_step = (self.velocity.y+self.gravity*dt) * dt
@@ -57,6 +58,8 @@ function Player:update(dt)
   else
     self.velocity.y = self.velocity.y * 0.2
   end
+
+  -- if self.velocity.y > 0 then self.velocity.y = self.velocity.y + 20*dt end
 
   self.x = self.x + (self.velocity.x * dt)
   self.y = self.y + (self.velocity.y * dt)
@@ -69,7 +72,6 @@ function Player:update(dt)
   if self.frame > #self.animations[self.anim] then
     self.frame = 1
   end
-
 end
 
 function Player:draw()

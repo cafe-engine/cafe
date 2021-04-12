@@ -2,6 +2,46 @@
 #include "cafe_lua.h"
 #include "lua.h"
 
+/* Audio */
+
+static int lua_cafe_audio_play(lua_State *L) {
+    cf_Audio *data = luaL_checkudata(L, 1, AUDIO_CLASS);
+    cafe_audio_play(*data);
+
+    return 0;
+}
+
+static int lua_cafe_audio_pause(lua_State *L) {
+    cf_Audio *data = luaL_checkudata(L, 1, AUDIO_CLASS);
+    cafe_audio_pause(*data);
+
+    return 0;
+}
+
+static int lua_cafe_audio_stop(lua_State *L) {
+    cf_Audio *data = luaL_checkudata(L, 1, AUDIO_CLASS);
+    cafe_audio_stop(*data);
+
+    return 0;
+}
+
+
+static int cafeopen_audio(lua_State *L) {
+    luaL_Reg reg[] = {
+        {"play", lua_cafe_audio_play},
+        {"stop", lua_cafe_audio_stop},
+        {"pause", lua_cafe_audio_pause},
+        {NULL, NULL}
+    };
+
+    luaL_newmetatable(L, AUDIO_CLASS);
+    luaL_setfuncs(L, reg, 0);
+    lua_pushvalue(L, -1);
+    lua_setfield(L, -2, "__index");
+
+    return 1;
+}
+
 /* Rect */
 
 static int cafe_lua_rect_x(lua_State *L) {
@@ -338,6 +378,7 @@ int luaopen_types(lua_State *L) {
     lua_newtable(L);
 
     struct { char *name; int (*fn)(lua_State*); } libs[] = {
+        {"Audio", cafeopen_audio},
         {"Rect", cafeopen_rect},
         {"Image", cafeopen_image},
         {"Canvas", cafeopen_canvas},

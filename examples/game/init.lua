@@ -7,10 +7,13 @@ local function customload(modulename)
     local errmsg = ""
     local modulepath = string.gsub(modulename, "%.", "/")
     local filename = modulepath .. ".lua"
+    if not cafe.filesystem.exists(filename) then
+        filename = modulepath .. '/init.lua'
+    end
     local file = cafe.filesystem.File(filename)
 
     if file then
-        return assert(load(assert(file:read()), filename)) 
+        return assert(load(assert(file:read()), filename))
     end
     errmsg = errmsg .. "\n\t[cafe] no file '" .. filename .. "'"
     return errmsg

@@ -85,6 +85,7 @@ int luaopen_cafe(lua_State *L) {
     luaL_newlib(L, reg);
 
     struct { char *name; int (*fn)(lua_State*); } libs[] = {
+        {"audio", luaopen_audio},
         {"types", luaopen_types},
         {"timer", luaopen_timer},
         {"keyboard", luaopen_keyboard},

@@ -43,6 +43,7 @@ struct Cafe {
     te_Texture *textures[CAFE_MAX_TEXTURES];
     la_vfs_t *root;
     te_Font *font;
+    mo_audio_t *audio_bank[CAFE_MAX_AUDIO];
 };
 
 Cafe _cafe_ctx;
@@ -69,7 +70,7 @@ int cafe_init(cf_Config *conf) {
         tea_cfg.window_flags = conf->window_flags;
 
         tea_init(&tea_cfg);
-        mocha_init(0);
+        mo_init(0);
         int has_argv = conf->argv && conf->argv[1];
         cafe_filesystem_init(has_argv ? conf->argv[1] : "game.tar");
 
@@ -474,6 +475,7 @@ int cafe_filesystem_rmdir(const char *path) {
 }
 
 int cafe_filesystem_isfile(const char *filename) {
+    if (cafe()->root) return la_isvfile(cafe()->root, filename);
     return la_isfile(filename);
 }
 
@@ -553,41 +555,70 @@ void cafe_vdrive_close(cf_VDrive *drv) {
  * Audio              *
  **********************/
 
-cf_Audio* cafe_audio(void *data, long size, int usage) {
-    return mocha_buffer(data, size, usage);
+cf_Audio cafe_audio_free_slot() {
+    int i = 0;
+    while (i < MAX_AUDIO_DATA) {
+        if (cafe()->audio_bank[i] == NULL) return i;
+        i++;
+    }
+
+    return -1;
 }
 
-cf_Audio* cafe_audio_load(const char *filename, int usage) {
+cf_Audio cafe_audio(void *data, long size, int usage) {
+    cf_Audio audio = cafe_audio_free_slot();
+    cafe()->audio_bank[audio] = mo_audio(data, size, usage);
+    return audio+1;
+}
+
+cf_Audio cafe_audio_load(const char *filename, int usage) {
     cf_File *fp = cafe_file_open(filename, LA_READ_MODE);
     cf_Header h;
     cafe_file_header(fp, &h);
 
     void *data = malloc(h.size);
     cafe_file_read(fp, data, h.size);
-    la_log("%d %s", h.size, h.name);
 
-    return cafe_audio(data, h.size, 0);
+    return cafe_audio(data, h.size, usage);
 }
 
-void cafe_audio_destroy(cf_Audio *buf) {
-    mocha_buffer_unload(buf);
-}
-
-int cafe_audio_play(cf_Audio *buf) {
-    if (buf == NULL) cst_tracefatal("empty audio buffer");
-    
-    mocha_buffer_play((mo_AudioBuffer*)buf);
+int cafe_audio_destroy(cf_Audio buf) {
+    //mo_audio(buf);
     return 1;
 }
 
-int cafe_audio_pause(cf_Audio *buf) {
-   if (buf == NULL) cst_tracefatal("empty audio buffer"); 
-   mocha_buffer_pause((mo_AudioBuffer*)buf);
+int cafe_audio_play(cf_Audio id) {
+    if (id <= 0) cst_tracefatal("empty audio buffer");
+    mo_audio_t *buf = cafe()->audio_bank[id-1];
+    mo_play(buf);
+    return 1;
+}
+
+int cafe_audio_pause(cf_Audio id) {
+   if (id <= 0) cst_tracefatal("empty audio buffer"); 
+   mo_audio_t *buf = cafe()->audio_bank[id-1];
+   mo_pause(buf);
    return 1;
 }
 
-int cafe_audio_stop(cf_Audio *buf) {
-    if (buf == NULL) cst_tracefatal("empty audio buffer");
-    mocha_buffer_stop((mo_AudioBuffer*)buf);
+int cafe_audio_stop(cf_Audio id) {
+    if (id <= 0) cst_tracefatal("empty audio buffer");
+    mo_audio_t *buf = cafe()->audio_bank[id-1];
+    mo_stop(buf);
     return 1;
+}
+
+cf_Sound cafe_sound(void *data, unsigned int size) {
+    return cafe_audio(data, size, MO_AUDIO_STATIC);
+}
+
+cf_Sound cafe_sound_load(const char *filename) {
+    return cafe_audio_load(filename, MO_AUDIO_STATIC);
+}
+
+cf_Music cafe_music(void *data, unsigned int size) {
+    return cafe_audio(data, size, MO_AUDIO_STREAM);
+}
+cf_Music cafe_music_load(const char *filename) {
+    return cafe_audio_load(filename, MO_AUDIO_STREAM);
 }
