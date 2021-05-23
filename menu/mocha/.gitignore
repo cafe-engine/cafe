@@ -1,7 +1,0 @@
-.vscode
-.clangd
-mocha
-*.o
-*.a
-*.so
-compile_commands.json
