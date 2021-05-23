@@ -1,12 +1,12 @@
-[submodule "modules/coffee"]
-	path = modules/coffee
+[submodule "menu/coffee"]
+	path = menu/coffee
 	url = https://github.com/cafe-engine/coffee
-[submodule "modules/latte"]
-	path = modules/latte
+[submodule "menu/latte"]
+	path = menu/latte
 	url = https://github.com/cafe-engine/latte
-[submodule "modules/mocha"]
-	path = modules/mocha
+[submodule "menu/mocha"]
+	path = menu/mocha
 	url = https://github.com/cafe-engine/mocha
-[submodule "modules/tea"]
-	path = modules/tea
+[submodule "menu/tea"]
+	path = menu/tea
 	url = https://github.com/cafe-engine/tea

@@ -1,14 +1,14 @@
-NAME ?= hello
-CSTD = c99
-CFLAGS =
-LFLAGS = 
+NAME = cafe
+CFLAGS = -Wall -std=c99 `sdl2-config --cflags` 
+LFLAGS = `sdl2-config --libs`
+
+SRC = cafe.c
 MAIN = main.c
 
 TARGET = 
 PREFIX ?= 
 
-MODULES = 
-CDEFS ?= 
+CDEFS = 
 
 CC ?= cc
 AR ?= ar
@@ -17,103 +17,78 @@ LIBNAME = lib$(NAME)
 SLIBNAME = $(LIBNAME).a
 DLIBNAME = $(LIBNAME).so
 
-BIN_DIR ?= bin
-OBJ_DIR ?= obj
-LIB_DIR ?= lib
+MENU = tea mocha
+MENU_FOLDERS = $(MENU:%=menu/%/)
+MENU_FILES = $(join $(MENU_FOLDERS),$(MENU))
 
-MODDIR = modules
+INCLUDE = $(MENU_FOLDERS:%=-I%) $(MENU_FOLDERS:%=-I%external)
+MENU_OBJ = $(MENU_FILES:%=%.o)
 
-SRC_DIR = src
-INC_DIR = include
+OBJ = cafe.o $(MENU_OBJ)
+DOBJ = cafe.d.o $(MENU_OBJ:%.o=%.d.o)
 
-INCLUDE =
 ifeq ($(OS),Windows_NT)
-LFLAGS += -mwindows -opengl
+    LFLAGS += -mwindows
+else
+    LFLAGS += -lpthread -lm -ldl
 endif
 
--include config.mak
+OUT = $(NAME)
 
-SRC += $(wildcard $(SRC_DIR)/*.c)
-INCLUDE += -I$(INC_DIR) -I$(SRC_DIR)
-INCLUDE += $(MODULES:%=-I$(MODDIR)/%/src) $(MODULES:%=-I$(MODDIR)/%/include)
+CLEAN_MENU = $(MENU:%=%.cls)
 
-OBJ = $(SRC:%.c=$(OBJ_DIR)/%.o)
-SOBJ = $(OBJ:%.o=%.s.o)
-DOBJ = $(OBJ:%.o=%.d.o)
+.PHONY: all build $(MENU)
+.SECONDARY: $(OBJ) $(DOBJ)
 
-FOLDERS = $(OBJ_DIR) $(LIB_DIR) $(BIN_DIR)
+build: $(OUT)
 
-CFLAGS += -Wall -std=$(CSTD)
+all: $(SLIBNAME) $(DLIBNAME) $(OUT)
 
-MODS = $(MODULES:%=$(MODDIR)/%)
-
-CROSS_CC = $(PREFIX)$(CC)
-CROSS_AR = $(PREFIX)$(AR)
-
-SLIBOUT = $(SLIBNAME:%=$(LIB_DIR)/$(SLIBNAME))
-DLIBOUT = $(DLIBNAME:%=$(LIB_DIR)/$(DLIBNAME))
-OUT ?= $(BIN_DIR)/$(NAME)
-
-CLEAN_MODULES = $(MODULES:%=%.cls)
-
-build: folders $(MODULES) $(OUT)
-
-folders: $(FOLDERS)
-
-all: folders $(SLIBOUT) $(DLIBOUT) $(OUT)
-
-.PHONY: all build folders $(MODULES)
-.SECONDARY: $(SOBJ) $(DOBJ)
-
-
-$(FOLDERS):
-	@mkdir -p $@
-
-$(OUT): $(MAIN) $(SLIBOUT) 
+$(OUT): $(SLIBNAME) $(MAIN)
 	@echo "********************************************************"
 	@echo "** COMPILING $@"
 	@echo "********************************************************"
-	$(CROSS_CC) $(MAIN) -o $@ $(INCLUDE) $(CFLAGS) -L$(LIB_DIR) -l$(NAME) $(LFLAGS) $(CDEFS)
+	$(CC) $(MAIN) -o $@ $(INCLUDE) $(CFLAGS) -L. -l$(NAME) $(LFLAGS) $(CDEFS)
 	@echo ""
 
-%.a: $(SOBJ)
+%.a: $(OBJ)
 	@echo "********************************************************"
 	@echo "** CREATING $@"
 	@echo "********************************************************"
-	$(CROSS_AR) rcs $@ $(shell find $(OBJ_DIR)/ -name "*.o")
+	$(AR) rcs $@ $(OBJ)
 	@echo ""
 
 %.so: $(DOBJ)
 	@echo "********************************************************"
 	@echo "** CREATING $@"
 	@echo "********************************************************"
-	$(CROSS_CC) -shared -o $@ $(shell find $(OBJ_DIR)/ -name "*.d.o") $(INCLUDE) $(CFLAGS) $(CDEFS)
+	$(CC) -shared -o $@ $(DOBJ) $(INCLUDE) $(CFLAGS) $(CDEFS)
 	@echo ""
-
-$(OBJ_DIR)/%.s.o: %.c
+%.o: %.c
 	@echo "********************************************************"
 	@echo "** $(SLIBNAME): COMPILING SOURCE $<"
 	@echo "********************************************************"
 	@mkdir -p '$(@D)'
-	$(CROSS_CC) -c $< -o $@ $(INCLUDE) $(CFLAGS) $(CDEFS)
+	$(CC) -c $< -o $@ $(INCLUDE) $(CFLAGS) $(CDEFS)
 
-$(OBJ_DIR)/%.d.o: %.c
+%.d.o: %.c
 	@echo "********************************************************"
 	@echo "** $(DLIBNAME): COMPILING SOURCE $<"
 	@echo "********************************************************"
 	@mkdir -p '$(@D)'
-	$(CROSS_CC) -c $< -o $@ -fPIC $(INCLUDE) $(CFLAGS) $(CDEFS)
+	$(CC) -c $< -o $@ -fPIC $(INCLUDE) $(CFLAGS) $(CDEFS)
 
-$(MODULES):
-	$(MAKE) -C $(MODDIR)/$@
+$(MENU):
+	$(MAKE) -C menu/$@
 
-%.cls: $(MODDIR)/%
+%.cls: menu/%
 	echo $<
 	$(MAKE) clean -C $<
 
 clean:
 	rm -rf $(OUT)
+	rm -rf $(OBJ)
 	rm -rf $(DLIBNAME) $(SLIBNAME)
 	rm -rf $(FOLDERS)
 
-clean-all: clean $(CLEAN_MODULES)
+clean-all: clean $(CLEAN_MENU)

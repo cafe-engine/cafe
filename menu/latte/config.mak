@@ -1,0 +1,2 @@
+NAME = latte
+CVERSION=c89

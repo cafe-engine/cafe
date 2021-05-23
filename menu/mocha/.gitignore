@@ -1,9 +1,7 @@
 .vscode
+.clangd
+mocha
 *.o
-cafe
 *.a
 *.so
-*.sublime-*
-*.tgz
-.clangd
 compile_commands.json

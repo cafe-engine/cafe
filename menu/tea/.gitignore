@@ -1,9 +1,9 @@
 .vscode
+tea
 *.o
-cafe
 *.a
 *.so
 *.sublime-*
-*.tgz
+external/SDL*
 .clangd
 compile_commands.json

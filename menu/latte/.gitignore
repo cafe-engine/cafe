@@ -1,0 +1,11 @@
+latte
+*.txt
+*.a
+.clangd
+src/*.o
+main.c.old
+Makefile1
+bin/
+obj/
+lib/
+compile_commands.json
