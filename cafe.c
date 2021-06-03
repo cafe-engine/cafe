@@ -21,3 +21,11 @@ int cafe_window_maximize() { return tea_window_maximize(); }
 int cafe_window_restore() { return tea_window_restore(); }
 int cafe_window_fullscreen(int mode) { return tea_window_fullscreen(mode); }
 int cafe_window_bordered(int bordered) { return tea_window_bordered(bordered); }
+
+int cafe_begin() { return tea_begin(); }                                                                                                         
+int cafe_loop() {                                                                                                                                
+    while (!tea_should_close()) {                                                                                                                
+    }                                                                                                                                            
+    return 0;
+}                                                                                                                                                
+int cafe_end() { return tea_end(); }                                                                                                             
