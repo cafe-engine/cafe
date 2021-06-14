@@ -2,7 +2,9 @@ NAME = cafe
 CFLAGS = -Wall -std=c99 `sdl2-config --cflags` 
 LFLAGS = `sdl2-config --libs`
 
-SRC = cafe.c
+LUA_SRC = $(wildcard external/lua/src/*.c)
+
+SRC = cafe.c lua/cafe.c $(LUA_SRC)
 MAIN = main.c
 
 TARGET = 
@@ -17,14 +19,14 @@ LIBNAME = lib$(NAME)
 SLIBNAME = $(LIBNAME).a
 DLIBNAME = $(LIBNAME).so
 
-MENU = tea mocha
+MENU = tea mocha coffee
 MENU_FOLDERS = $(MENU:%=menu/%/)
 MENU_FILES = $(join $(MENU_FOLDERS),$(MENU))
 
-INCLUDE = $(MENU_FOLDERS:%=-I%) $(MENU_FOLDERS:%=-I%external)
+INCLUDE = -Iexternal/lua/src/ $(MENU_FOLDERS:%=-I%) $(MENU_FOLDERS:%=-I%external)
 MENU_OBJ = $(MENU_FILES:%=%.o)
 
-OBJ = cafe.o $(MENU_OBJ)
+OBJ = $(SRC:%.c=%.o) $(MENU_OBJ)
 DOBJ = cafe.d.o $(MENU_OBJ:%.o=%.d.o)
 
 ifeq ($(OS),Windows_NT)
