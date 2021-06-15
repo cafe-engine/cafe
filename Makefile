@@ -1,19 +1,31 @@
 NAME = cafe
-CFLAGS = -Wall -std=c99 `sdl2-config --cflags` 
-LFLAGS = `sdl2-config --libs`
+CC = cc
+AR = ar
+CFLAGS = -Wall -std=c99
+LFLAGS =
+OUT = $(NAME)
+CLEAR_FILES = 
 
 LUA_SRC = $(wildcard external/lua/src/*.c)
 
 SRC = cafe.c lua/cafe.c $(LUA_SRC)
 MAIN = main.c
+INCLUDE =
+
+ifeq ($(PLATFORM), Windows)
+include cross/mingw.makefile
+else
+    ifeq ($(PLATFORM),Web)
+    include cross/emscripten.makefile
+    else
+    include cross/linux.makefile
+    endif
+endif
 
 TARGET = 
 PREFIX ?= 
 
 CDEFS = 
-
-CC ?= cc
-AR ?= ar
 
 LIBNAME = lib$(NAME)
 SLIBNAME = $(LIBNAME).a
@@ -23,19 +35,11 @@ MENU = tea mocha coffee
 MENU_FOLDERS = $(MENU:%=menu/%/)
 MENU_FILES = $(join $(MENU_FOLDERS),$(MENU))
 
-INCLUDE = -Iexternal/lua/src/ $(MENU_FOLDERS:%=-I%) $(MENU_FOLDERS:%=-I%external)
+INCLUDE += -Iexternal/lua/src/ $(MENU_FOLDERS:%=-I%) $(MENU_FOLDERS:%=-I%external)
 MENU_OBJ = $(MENU_FILES:%=%.o)
 
 OBJ = $(SRC:%.c=%.o) $(MENU_OBJ)
 DOBJ = cafe.d.o $(MENU_OBJ:%.o=%.d.o)
-
-ifeq ($(OS),Windows_NT)
-    LFLAGS += -mwindows
-else
-    LFLAGS += -lpthread -lm -ldl
-endif
-
-OUT = $(NAME)
 
 CLEAN_MENU = $(MENU:%=%.cls)
 
@@ -92,5 +96,6 @@ clean:
 	rm -rf $(OBJ)
 	rm -rf $(DLIBNAME) $(SLIBNAME)
 	rm -rf $(FOLDERS)
+	rm -rf $(CLEAR_FILES)
 
 clean-all: clean $(CLEAN_MENU)
