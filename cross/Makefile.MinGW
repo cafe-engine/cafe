@@ -1,0 +1,18 @@
+MINGW_PATH = C:\MinGW
+ifeq ($(OS),Windows_NT)
+PREFIX = mingw
+SUFFIX = .exe
+LFLAGS := -L$(MINGW_PATH)\lib
+INCLUDE = -I$(MINGW_PATH)\include
+else
+CFLAGS = `sdl2-config --cflags`
+PREFIX = x86_64-w64-mingw32
+SUFFIX =
+endif
+
+LFLAGS += -lm -mwindows -lmingw32 -lSDL2
+
+OUT := $(NAME).exe
+
+CC := $(PREFIX)-gcc$(SUFFIX)
+AR := $(PREFIX)-ar$(SUFFIX)

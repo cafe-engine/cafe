@@ -1,0 +1,2 @@
+CFLAGS += `sdl2-config --cflags`
+LFLAGS := -lpthread -lm `sdl2-config --libs`

@@ -13,12 +13,12 @@ MAIN = main.c
 INCLUDE =
 
 ifeq ($(PLATFORM), Windows)
-include cross/mingw.makefile
+include cross/Makefile.MinGW
 else
     ifeq ($(PLATFORM),Web)
-    include cross/emscripten.makefile
+    include cross/Makefile.Web
     else
-    include cross/linux.makefile
+    include cross/Makefile.Linux
     endif
 endif
 

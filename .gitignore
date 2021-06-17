@@ -7,3 +7,4 @@ cafe
 *.tgz
 .clangd
 compile_commands.json
+bin/
