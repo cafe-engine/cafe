@@ -6,6 +6,7 @@
 #include "../cafe.h"
 #include "tea.h"
 #include "mocha.h"
+#include "latte.h"
 
 #include "lua.h"
 #include "lauxlib.h"
@@ -13,13 +14,15 @@
 
 #define AUDIO_CLASS "Audio"
 #define TEXTURE_CLASS "Texture"
+#define FILE_CLASS "File"
 #define FONT_CLASS "Font"
 #define RECT_CLASS "Rect"
 #define JOYSTICK_CLASS "Joystick"
 #define CONTROLLER_CLASS "Controller"
 
 static const char *boot_lua = "local traceback = debug.traceback\n"
-"package.path = package.path .. ';core/?.lua;core/?/init.lua'\n"
+"local filepath = cafe.filesystem.path()\n"
+"package.path = package.path .. ';' .. filepath .. '/?.lua;' .. filepath .. '/?/init.lua'\n"
 "local function _err(msg)\n"
 "   local trace = traceback('', 1)\n"
 "   cafe.error(msg, trace)\n"
@@ -73,6 +76,18 @@ CAFE_API int l_cafe_rect_y(lua_State *L);
 CAFE_API int l_cafe_rect_w(lua_State *L);
 CAFE_API int l_cafe_rect_h(lua_State *L);
 
+/* File */
+CAFE_API int luaopen_file(lua_State *L);
+CAFE_API int l_cafe_file(lua_State *L);
+CAFE_API int l_cafe_file_read(lua_State *L);
+CAFE_API int l_cafe_file_write(lua_State *L);
+CAFE_API int l_cafe_file_insert(lua_State *L);
+CAFE_API int l_cafe_file_append(lua_State *L);
+CAFE_API int l_cafe_file_close(lua_State *L);
+CAFE_API int l_cafe_file_info(lua_State *L);
+CAFE_API int l_cafe_file_size(lua_State *L);
+CAFE_API int l_cafe_file__gc(lua_State *L);
+
 /* Font */
 CAFE_API int luaopen_font(lua_State *L);
 CAFE_API int l_cafe_font(lua_State *L);
@@ -84,6 +99,13 @@ CAFE_API int luaopen_texture(lua_State *L);
 CAFE_API int l_cafe_texture(lua_State *L);
 CAFE_API int l_cafe_texture_draw(lua_State *L);
 CAFE_API int l_cafe_texture__gc(lua_State *L);
+
+/* Filesystem */
+
+CAFE_API int luaopen_filesystem(lua_State *L);
+CAFE_API int l_cafe_filesystem_fopen(lua_State *L);
+CAFE_API int l_cafe_filesystem_info(lua_State *L);
+CAFE_API int l_cafe_filesystem_path(lua_State *L);
 
 /* Render */
 

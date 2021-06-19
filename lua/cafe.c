@@ -70,6 +70,7 @@ int luaopen_cafe(lua_State *L) {
         {"Font", l_cafe_font},
         {"Texture", l_cafe_texture},
         {"Rect", l_cafe_rect},
+        {"File", l_cafe_file},
         {NULL, NULL}
     };
     luaL_newlib(L, reg);
@@ -78,11 +79,13 @@ int luaopen_cafe(lua_State *L) {
         {"_Rect", luaopen_rect},
         {"_Font", luaopen_font},
         {"_Texture", luaopen_texture},
+        {"_File", luaopen_file},
         {"Joystick", luaopen_joystick},
         {"render", luaopen_render},
         {"keyboard", luaopen_keyboard},
         {"mouse", luaopen_mouse},
         {"window", luaopen_window},
+        {"filesystem", luaopen_filesystem},
         {NULL, NULL}
     };
 
@@ -170,6 +173,91 @@ int l_cafe_rect_set(lua_State *L) {
     return 4;
 }
 
+int luaopen_file(lua_State *L) {
+    luaL_Reg reg[] = {
+        {"read", l_cafe_file_read},
+        {"write", l_cafe_file_write},
+        {"append", l_cafe_file_append},
+        {"close", l_cafe_file_close},
+        {"info", l_cafe_file_info},
+        {"__gc", l_cafe_file_close},
+        {NULL, NULL}
+    };
+
+    luaL_newmetatable(L, FILE_CLASS);
+    luaL_setfuncs(L, reg, 0);
+    lua_pushvalue(L, -1);
+    lua_setfield(L, -2, "__index");
+
+    return 1;
+}
+
+int l_cafe_file(lua_State *L) {
+    la_file_t **fp = lua_newuserdata(L, sizeof(*fp));
+    luaL_setmetatable(L, FILE_CLASS);
+    const char *path = luaL_checkstring(L, 1);
+    int mode = luaL_optnumber(L, 2, 0);
+    *fp = la_fopen(path, mode);
+
+    return 1;
+}
+
+int l_cafe_file_close(lua_State *L) {
+    la_file_t **fp = luaL_checkudata(L, 1, FILE_CLASS);
+    la_fclose(*fp);
+    return 0;
+}
+
+int l_cafe_file_read(lua_State *L) {
+    la_file_t **fp = luaL_checkudata(L, 1, FILE_CLASS);
+    la_header_t h;
+    la_fheader(*fp, &h);
+
+    int bytes = luaL_optnumber(L, 1, h.size);
+    
+    char data[bytes];
+    la_fread(*fp, data, bytes);
+
+    lua_pushstring(L, data);
+
+    return 1;
+}
+
+int l_cafe_file_write(lua_State *L) {
+    la_file_t **fp = luaL_checkudata(L, 1, FILE_CLASS);
+    const char *text = luaL_checkstring(L, 2);
+    int bytes = luaL_optnumber(L, 2, strlen(text));
+
+    la_fwrite(*fp, text, bytes);
+
+    return 0;
+}
+
+int l_cafe_file_append(lua_State *L) {
+    la_file_t **fp = luaL_checkudata(L, 1, FILE_CLASS);
+    const char *text = luaL_checkstring(L, 2);
+    int bytes = luaL_optnumber(L, 2, strlen(text));
+
+    la_fappend(*fp, text, bytes);
+
+    return 0;
+}
+
+int l_cafe_file_info(lua_State *L) {
+    la_file_t **fp = luaL_checkudata(L, 1, FILE_CLASS);
+
+    la_header_t h;
+    la_fheader(*fp, &h);
+
+    lua_newtable(L);
+    lua_pushnumber(L, h.size);
+    lua_setfield(L, -2, "size");
+    lua_pushstring(L, h.name);
+    lua_setfield(L, -2, "name");
+
+    return 1;
+}
+
 int luaopen_font(lua_State *L) {
     luaL_Reg reg[] = {
         {"__call", l_cafe_font},
@@ -190,7 +278,14 @@ int l_cafe_font(lua_State *L) {
     int size = luaL_optnumber(L, 2, 16);
     te_font_t **font = lua_newuserdata(L, sizeof(*font)); 
     luaL_setmetatable(L, FONT_CLASS);
-    *font = tea_font_load(str, size);
+    la_file_t *fp = la_fopen(str, LA_READ_MODE);
+    la_header_t h;
+    la_fheader(fp, &h);
+
+    char data[h.size];
+    la_fread(fp, data, h.size); 
+
+    *font = tea_font(data, h.size, size);
     return 1;
 }
 
@@ -224,9 +319,18 @@ int luaopen_texture(lua_State *L) {
 int _texture_from_path(lua_State *L) {
     const char *filepath = luaL_checkstring(L, 1);
     int usage = luaL_optnumber(L, 2, 1)-1;
+
+    la_file_t *f = la_fopen(filepath, LA_READ_MODE);
+    la_header_t h;
+    la_fheader(f, &h);
+
+    char data[h.size];
+    la_fread(f, data, h.size);
+    la_fclose(f);
+
     te_texture_t **tex = lua_newuserdata(L, sizeof(*tex));
     luaL_setmetatable(L, TEXTURE_CLASS);
-    *tex = tea_texture_load(filepath, usage);
+    *tex = tea_texture_from_memory(data, h.size, usage);
 
     return 1;
 }
@@ -252,13 +356,43 @@ int l_cafe_texture(lua_State *L) {
 }
 
 int l_cafe_texture_draw(lua_State *L) {
-    te_texture_t **tex = luaL_checkudata(L, 1, TEXTURE_CLASS);
-    te_rect_t *d = luaL_testudata(L, 2, RECT_CLASS);
-    te_rect_t *s = luaL_testudata(L, 3, RECT_CLASS);
+    int arg = 1;
+    te_texture_t **tex = luaL_checkudata(L, arg++, TEXTURE_CLASS);
+    te_rect_t *part = luaL_testudata(L, arg++, RECT_CLASS);
+    te_rect_t d, s;
+    if (part) memcpy(&s, part, sizeof(*part));
+    else arg--;
+    d.x = luaL_optnumber(L, arg++, 0);
+    d.y = luaL_optnumber(L, arg++, 0);
+    TEA_TNUM angle = luaL_optnumber(L, arg++, 0);
+    TEA_TNUM sx, sy;
+    sx = luaL_optnumber(L, arg++, 1);
+    sy = luaL_optnumber(L, arg++, 1);
+    d.w = sx*s.w;
+    d.h = sy*s.h;
 
-    tea_texture_draw(*tex, d, s);
+    tea_texture_draw_ex(*tex, &d, &s, angle, NULL, 0);
 
     return 0;
+}
+
+int luaopen_filesystem(lua_State *L) {
+    luaL_Reg reg[] = {
+        {"fopen", l_cafe_file},
+        {"path", l_cafe_filesystem_path},
+        {NULL, NULL}
+    };
+
+    luaL_newlib(L, reg);
+
+    return 1;
+}
+
+int l_cafe_filesystem_path(lua_State *L) {
+    char out[100];
+    la_get_basedir(out);
+    lua_pushstring(L, out);
+    return 1;
 }
 
 int luaopen_render(lua_State *L) {

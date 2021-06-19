@@ -13,7 +13,7 @@ MAIN = main.c
 INCLUDE =
 
 ifeq ($(PLATFORM), Windows)
-include cross/Makefile.MinGW
+include cross/Makefile.Windows
 else
     ifeq ($(PLATFORM),Web)
     include cross/Makefile.Web
@@ -31,7 +31,7 @@ LIBNAME = lib$(NAME)
 SLIBNAME = $(LIBNAME).a
 DLIBNAME = $(LIBNAME).so
 
-MENU = tea mocha coffee
+MENU = tea mocha coffee latte
 MENU_FOLDERS = $(MENU:%=menu/%/)
 MENU_FILES = $(join $(MENU_FOLDERS),$(MENU))
 
@@ -39,7 +39,7 @@ INCLUDE += -Iexternal/lua/src/ $(MENU_FOLDERS:%=-I%) $(MENU_FOLDERS:%=-I%externa
 MENU_OBJ = $(MENU_FILES:%=%.o)
 
 OBJ = $(SRC:%.c=%.o) $(MENU_OBJ)
-DOBJ = cafe.d.o $(MENU_OBJ:%.o=%.d.o)
+DOBJ = cafe.do $(MENU_OBJ:%.o=%.do)
 
 CLEAN_MENU = $(MENU:%=%.cls)
 
@@ -77,7 +77,7 @@ $(OUT): $(SLIBNAME) $(MAIN)
 	@mkdir -p '$(@D)'
 	$(CC) -c $< -o $@ $(INCLUDE) $(CFLAGS) $(CDEFS)
 
-%.d.o: %.c
+%.do: %.c
 	@echo "********************************************************"
 	@echo "** $(DLIBNAME): COMPILING SOURCE $<"
 	@echo "********************************************************"
@@ -92,10 +92,9 @@ $(MENU):
 	$(MAKE) clean -C $<
 
 clean:
-	rm -rf $(OUT)
-	rm -rf $(OBJ)
+	rm -rf $(OUT) $(CLEAR_FILES) 
+	rm -rf $(OBJ) $(DOBJ)
 	rm -rf $(DLIBNAME) $(SLIBNAME)
 	rm -rf $(FOLDERS)
-	rm -rf $(CLEAR_FILES)
 
 clean-all: clean $(CLEAN_MENU)

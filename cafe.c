@@ -10,6 +10,7 @@
 #include "tea.h"
 #include "mocha.h"
 #include "coffee.h"
+#include "latte.h"
 
 /************************
  * Core
@@ -17,9 +18,11 @@
 
 int cafe_init(int argc, char **argv) {
     te_config_t conf = tea_config_init("cafe 0.1.0", 640, 380);
+    const char *path = argv[1] ? argv[1] : ".";
 #ifdef __EMSCRIPTEN__
     conf.window_flags |= TEA_WINDOW_RESIZABLE;
 #endif
+    la_init(path);
     tea_init(&conf);
     mo_init(0);
 
