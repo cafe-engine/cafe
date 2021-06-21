@@ -2,13 +2,13 @@ local Player = require 'objects.player'
 local Lizard = require 'objects.lizard'
 function cafe.load()
     player = Player(0, 0)
+    liz = Lizard(32, 32)
     canv = cafe.Texture(160, 95, 3)
-    dest = cafe.Rect(0, 0, 640, 380)
-    liz = Lizard(0, 32)
 end
 
 function cafe.update(dt)
     player:update(dt)
+    liz:update(dt)
 end
 
 function cafe.draw()
@@ -18,5 +18,11 @@ function cafe.draw()
     liz:draw()
     cafe.render.target()
 
-    canv:draw(dest)
+    canv:draw(0, 0, 0, 4, 4)
+end
+
+function cafe.keypressed(wid, key, rpt)
+    if key == 'X' and not krepeat then
+	player:jump()
+    end
 end

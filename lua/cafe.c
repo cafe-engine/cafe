@@ -11,6 +11,7 @@ int l_cafe_init(int args, char **argv) {
     tea_event_window_focus(l_cafe_callback_window_focus);
     tea_event_window_mouse(l_cafe_callback_window_mouse);
     tea_event_window_close(l_cafe_callback_window_close);
+    tea_event_key(l_cafe_callback_keyboard);
 
     luaL_openlibs(L);
     luaL_requiref(L, "cafe", luaopen_cafe, 1);
@@ -304,6 +305,10 @@ int l_cafe_font_print(lua_State *L) {
 int luaopen_texture(lua_State *L) {
     luaL_Reg reg[] = {
         {"__call", l_cafe_texture},
+	{"info", l_cafe_texture_info},
+	{"width", l_cafe_texture_width},
+	{"height", l_cafe_texture_height},
+	{"size", l_cafe_texture_size},
         {"draw", l_cafe_texture_draw},
         {NULL, NULL}
     };
@@ -355,23 +360,72 @@ int l_cafe_texture(lua_State *L) {
     return 1;
 }
 
+int l_cafe_texture_info(lua_State *L) {
+    te_texture_t **tex = luaL_checkudata(L, 1, TEXTURE_CLASS);
+    te_texinfo_t info;
+    tea_texture_info(*tex, &info);
+
+    lua_newtable(L);
+    lua_newtable(L);
+    lua_pushnumber(L, info.size.w);
+    lua_setfield(L, -2, "x");
+    lua_pushnumber(L, info.size.h);
+    lua_setfield(L, -2, "y");
+
+    lua_setfield(L, -2, "size");
+    lua_pushnumber(L, info.usage);
+    lua_setfield(L, -2, "usage");
+    
+    return 1;
+}
+
+int l_cafe_texture_width(lua_State *L) {
+    te_texture_t **tex = luaL_checkudata(L, 1, TEXTURE_CLASS);
+    te_texinfo_t info;
+    tea_texture_info(*tex, &info);
+    lua_pushnumber(L, info.size.w);
+    return 1;
+}
+
+int l_cafe_texture_height(lua_State *L) {
+    te_texture_t **tex = luaL_checkudata(L, 1, TEXTURE_CLASS);
+    te_texinfo_t info;
+    tea_texture_info(*tex, &info);
+    lua_pushnumber(L, info.size.h);
+    return 1;
+}
+
+int l_cafe_texture_size(lua_State *L) {
+    te_texture_t **tex = luaL_checkudata(L, 1, TEXTURE_CLASS);
+    te_texinfo_t info;
+    tea_texture_info(*tex, &info);
+    lua_pushnumber(L, info.size.w);
+    lua_pushnumber(L, info.size.h);
+    return 2;
+}
+
 int l_cafe_texture_draw(lua_State *L) {
-    int arg = 1;
-    te_texture_t **tex = luaL_checkudata(L, arg++, TEXTURE_CLASS);
-    te_rect_t *part = luaL_testudata(L, arg++, RECT_CLASS);
+    int arg = 0;
+    te_texture_t **tex = luaL_checkudata(L, ++arg, TEXTURE_CLASS);
+    te_texinfo_t info;
+    tea_texture_info(*tex, &info);
+    te_rect_t *part = luaL_testudata(L, ++arg, RECT_CLASS);
     te_rect_t d, s;
+    s = TEA_RECT(0, 0, info.size.w, info.size.h);
+
     if (part) memcpy(&s, part, sizeof(*part));
     else arg--;
-    d.x = luaL_optnumber(L, arg++, 0);
-    d.y = luaL_optnumber(L, arg++, 0);
-    TEA_TNUM angle = luaL_optnumber(L, arg++, 0);
+
+    d.x = luaL_optnumber(L, ++arg, 0);
+    d.y = luaL_optnumber(L, ++arg, 0);
+    TEA_TNUM angle = luaL_optnumber(L, ++arg, 0);
     TEA_TNUM sx, sy;
-    sx = luaL_optnumber(L, arg++, 1);
-    sy = luaL_optnumber(L, arg++, 1);
+    sx = luaL_optnumber(L, ++arg, 1);
+    sy = luaL_optnumber(L, ++arg, 1);
     d.w = sx*s.w;
     d.h = sy*s.h;
 
-    tea_texture_draw_ex(*tex, &d, &s, angle, NULL, 0);
+    tea_texture_draw(*tex, &d, &s);
 
     return 0;
 }
@@ -814,6 +868,25 @@ int l_cafe_joystick_ball(lua_State *L) {
     lua_pushnumber(L, dx);
     lua_pushnumber(L, dy);
     return 2;
+}
+
+int l_cafe_callback_keyboard(int window_id, int down, int repeat, struct te_keysym_t sym) {
+    lua_getglobal(L, "cafe");
+    if (!lua_isnil(L, -1)) {
+	const char* fn_str[2] = { "keyreleased", "keypressed"};
+	lua_getfield(L, -1, fn_str[down]);
+	if (!lua_isnil(L, -1)) {
+	    lua_pushnumber(L, window_id);
+	    lua_pushstring(L, tea_key_name(sym.scancode));
+	    lua_pushboolean(L, repeat);
+	    int err = lua_pcall(L, 3, 0, 0);
+	    if (err) {
+		fprintf(stderr, "cafe lua error: %s\n", lua_tostring(L, -1)); 
+		exit(0);
+	    }
+	}
+    }
+    return 0;
 }
 
 int l_cafe_callback_window_move(int id, int x, int y) {

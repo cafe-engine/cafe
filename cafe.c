@@ -43,11 +43,7 @@ int cafe_loop() {
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(_loop, 0, 1);
 #else
-    while (!tea_should_close()) {
-        tea_begin();
-        l_cafe_run(L);
-        tea_end();
-    }
+    while (!tea_should_close()) _loop();
 #endif
     return 0;
 }

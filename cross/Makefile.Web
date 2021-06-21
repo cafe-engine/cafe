@@ -1,6 +1,6 @@
-CFLAGS := -Wall -s USE_SDL=2 --embed-file main.lua --embed-file goblin.png --shell-file index.html
+CFLAGS := -Wall -s FORCE_FILESYSTEM=1 -s USE_SDL=2
 LFLAGS := -lpthread -lm -ldl -lSDL2
-OUT := $(NAME).html
+OUT := $(NAME).js
 CLEAR_FILES := cafe.js cafe.wasm
 
 CC := emcc

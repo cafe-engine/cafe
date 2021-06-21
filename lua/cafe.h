@@ -97,6 +97,10 @@ CAFE_API int l_cafe_font__gc(lua_State *L);
 /* Texture */
 CAFE_API int luaopen_texture(lua_State *L);
 CAFE_API int l_cafe_texture(lua_State *L);
+CAFE_API int l_cafe_texture_info(lua_State *L);
+CAFE_API int l_cafe_texture_width(lua_State *L);
+CAFE_API int l_cafe_texture_height(lua_State *L);
+CAFE_API int l_cafe_texture_size(lua_State *L);
 CAFE_API int l_cafe_texture_draw(lua_State *L);
 CAFE_API int l_cafe_texture__gc(lua_State *L);
 
@@ -163,6 +167,7 @@ CAFE_API int l_cafe_joystick_ball(lua_State *L);
 /* Callbacks */
 
 CAFE_API int l_cafe_callback_controller_device(int state, int id);
+CAFE_API int l_cafe_callback_keyboard(int window_id, int down, int repeat, struct te_keysym_t sym);
 
 CAFE_API int l_cafe_callback_window_move(int id, int x, int y);
 CAFE_API int l_cafe_callback_window_resize(int id, int w, int h);

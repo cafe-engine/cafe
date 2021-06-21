@@ -12,24 +12,28 @@ SRC = cafe.c lua/cafe.c $(LUA_SRC)
 MAIN = main.c
 INCLUDE =
 
-ifeq ($(PLATFORM), Windows)
-include cross/Makefile.Windows
+ifeq ($(TARGET),Web)
+    CLEAN_FILES = $(NAME).wasm $(NAME).js
+endif
+
+ifeq ($(OS),Windows_NT)
+    TARGET ?= Windows
+    LIB_EXT = dll
 else
-    ifeq ($(PLATFORM),Web)
-    include cross/Makefile.Web
+    UNAME_S = $(shell uname -s)
+    ifeq ($(UNAME_S),Darwin)
+    TARGET ?= OSX
+    LIB_EXT = dylib
     else
-    include cross/Makefile.Linux
+    TARGET ?= $(UNAME_S)
     endif
 endif
 
-TARGET = 
-PREFIX ?= 
-
-CDEFS = 
+include cross/Makefile.$(TARGET)
 
 LIBNAME = lib$(NAME)
 SLIBNAME = $(LIBNAME).a
-DLIBNAME = $(LIBNAME).so
+DLIBNAME = $(LIBNAME).$(LIB_EXT)
 
 MENU = tea mocha coffee latte
 MENU_FOLDERS = $(MENU:%=menu/%/)
@@ -46,15 +50,15 @@ CLEAN_MENU = $(MENU:%=%.cls)
 .PHONY: all build $(MENU)
 .SECONDARY: $(OBJ) $(DOBJ)
 
-build: $(OUT)
+build: $(NAME)
 
 all: $(SLIBNAME) $(DLIBNAME) $(OUT)
 
-$(OUT): $(SLIBNAME) $(MAIN)
+$(NAME): $(SLIBNAME) $(MAIN)
 	@echo "********************************************************"
 	@echo "** COMPILING $@"
 	@echo "********************************************************"
-	$(CC) $(MAIN) -o $@ $(INCLUDE) $(CFLAGS) -L. -l$(NAME) $(LFLAGS) $(CDEFS)
+	$(CC) $(MAIN) -o $(OUT) $(INCLUDE) $(CFLAGS) -L. -l$(NAME) $(LFLAGS) $(CDEFS)
 	@echo ""
 
 %.a: $(OBJ)
