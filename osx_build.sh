@@ -8,7 +8,7 @@ LM_USER=c4nx1
 LM_PORT=2522
 
 scp -P $LM_PORT -r ../cafe $LM_USER@$LM_HOST:~/.tmp
-ssh -p $LM_PORT $LM_USER@$LM_HOST "(cd ~/.tmp/cafe && ./linux_build.sh)"
+ssh -p $LM_PORT -t $LM_USER@$LM_HOST 'cd ~/.tmp/cafe && bash -ic "./linux_build.sh"'
 scp -P $LM_PORT -r $LM_USER@$LM_HOST:~/.tmp/cafe/build/ build/
 
 mkdir build/

@@ -88,6 +88,14 @@ CAFE_API int l_cafe_file_info(lua_State *L);
 CAFE_API int l_cafe_file_size(lua_State *L);
 CAFE_API int l_cafe_file__gc(lua_State *L);
 
+/* Audio */
+CAFE_API int luaopen_audio(lua_State *L);
+CAFE_API int l_cafe_audio(lua_State *L);
+CAFE_API int l_cafe_audio_play(lua_State *L);
+CAFE_API int l_cafe_audio_pause(lua_State *L);
+CAFE_API int l_cafe_audio_stop(lua_State *L);
+CAFE_API int l_cafe_audio__gc(lua_State *L);
+
 /* Font */
 CAFE_API int luaopen_font(lua_State *L);
 CAFE_API int l_cafe_font(lua_State *L);
@@ -136,18 +144,23 @@ CAFE_API int l_cafe_window_maximize(lua_State *L);
 CAFE_API int l_cafe_window_restore(lua_State *L);
 CAFE_API int l_cafe_window_fullscreen(lua_State *L);
 
-/* Input */
+/****************
+ * Input 
+ ****************/
 
+/* Keyboard */
 CAFE_API int l_cafe_keyboard_down(lua_State *L);
 CAFE_API int l_cafe_keyboard_up(lua_State *L);
 CAFE_API int l_cafe_keyboard_pressed(lua_State *L);
 CAFE_API int l_cafe_keyboard_released(lua_State *L);
 
+/* Mouse */
 CAFE_API int l_cafe_mouse_down(lua_State *L);
 CAFE_API int l_cafe_mouse_up(lua_State *L);
 CAFE_API int l_cafe_mouse_pressed(lua_State *L);
 CAFE_API int l_cafe_mouse_released(lua_State *L);
 
+/* Joystick */
 CAFE_API int l_cafe_joystick(lua_State *L);
 CAFE_API int l_cafe_joystick_count(lua_State *L);
 CAFE_API int l_cafe_joystick_vibration(lua_State *L);

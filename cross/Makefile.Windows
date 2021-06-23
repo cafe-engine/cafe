@@ -6,6 +6,7 @@ LFLAGS := -L$(SDL2_PATH)/libs -lSDL2 -lSDL2main
 INCLUDE = -I$(SDL2_PATH)/include/SDL2
 else
 CFLAGS = `sdl2-config --cflags`
+LFLAGS := `sdl2-config --libs`
 SUFFIX =
 endif
 

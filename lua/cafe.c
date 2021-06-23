@@ -72,6 +72,7 @@ int luaopen_cafe(lua_State *L) {
         {"Texture", l_cafe_texture},
         {"Rect", l_cafe_rect},
         {"File", l_cafe_file},
+	{"Audio", l_cafe_audio},
         {NULL, NULL}
     };
     luaL_newlib(L, reg);
@@ -81,6 +82,7 @@ int luaopen_cafe(lua_State *L) {
         {"_Font", luaopen_font},
         {"_Texture", luaopen_texture},
         {"_File", luaopen_file},
+	{"_Audio", luaopen_audio},
         {"Joystick", luaopen_joystick},
         {"render", luaopen_render},
         {"keyboard", luaopen_keyboard},
@@ -259,6 +261,75 @@ int l_cafe_file_info(lua_State *L) {
     return 1;
 }
 
+int luaopen_audio(lua_State *L) {
+    luaL_Reg reg[] = {
+	{"play", l_cafe_audio_play},
+	{"stop", l_cafe_audio_stop},
+	{"pause", l_cafe_audio_pause},
+	{"__gc", l_cafe_audio__gc},
+	{NULL, NULL}
+    };
+
+    luaL_newmetatable(L, AUDIO_CLASS);
+    luaL_setfuncs(L, reg, 0);
+    lua_pushvalue(L, -1);
+    lua_setfield(L, -2, "__index");
+
+    return 1;
+}
+
+int l_cafe_audio(lua_State *L) {
+    const char *path = luaL_checkstring(L, 1);
+    int usage = luaL_optnumber(L, 2, 0);
+
+    mo_audio_t **audio = lua_newuserdata(L, sizeof(*audio));
+    luaL_setmetatable(L, AUDIO_CLASS);
+    
+    la_file_t *fp = la_fopen(path, LA_READ_MODE);
+    printf("qqqq\n");
+    if (!fp) {
+	lua_pushstring(L, "Failed to load audio");
+	lua_error(L);
+	return 0;
+    }
+    la_header_t h;
+    la_fheader(fp, &h);
+
+    char data[h.size];
+    la_fread(fp, data, h.size);
+    la_fclose(fp);
+
+    *audio = mo_audio(data, h.size, usage);
+
+    return 1;
+}
+
+int l_cafe_audio_play(lua_State *L) {
+    mo_audio_t **audio = luaL_checkudata(L, 1, AUDIO_CLASS);
+    mo_play(*audio);
+    return 0;
+}
+
+int l_cafe_audio_stop(lua_State *L) {
+    mo_audio_t **audio = luaL_checkudata(L, 1, AUDIO_CLASS);
+    mo_stop(*audio);
+    return 0;
+}
+
+int l_cafe_audio_pause(lua_State *L) {
+    mo_audio_t **audio = luaL_checkudata(L, 1, AUDIO_CLASS);
+    mo_pause(*audio);
+    return 0;
+}
+
+int l_cafe_audio__gc(lua_State *L) {
+    mo_audio_t **audio = luaL_checkudata(L, 1, AUDIO_CLASS);
+    if (*audio) mo_audio_destroy(*audio);
+    *audio = NULL;
+
+    return 0;
+}
+
 int luaopen_font(lua_State *L) {
     luaL_Reg reg[] = {
         {"__call", l_cafe_font},
@@ -426,6 +497,8 @@ int l_cafe_texture_draw(lua_State *L) {
     d.h = sy*s.h;
 
     tea_texture_draw(*tex, &d, &s);
+//    tea_texture_draw_ex(*tex, &d, &s, angle, NULL, 0);
+
 
     return 0;
 }

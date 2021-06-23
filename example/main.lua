@@ -4,6 +4,9 @@ function cafe.load()
     player = Player(0, 0)
     liz = Lizard(32, 32)
     canv = cafe.Texture(160, 95, 3)
+    print('teste')
+    a = cafe.Audio("assets/Som.wav")
+    a:play()
 end
 
 function cafe.update(dt)
@@ -22,7 +25,7 @@ function cafe.draw()
 end
 
 function cafe.keypressed(wid, key, rpt)
-    if key == 'X' and not krepeat then
+    if key == 'X' and not rpt then
 	player:jump()
     end
 end

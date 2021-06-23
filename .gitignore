@@ -8,3 +8,5 @@ cafe
 .clangd
 compile_commands.json
 bin/
+.DS_*
+.cache
