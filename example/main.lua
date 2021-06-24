@@ -4,8 +4,8 @@ function cafe.load()
     player = Player(0, 0)
     liz = Lizard(32, 32)
     canv = cafe.Texture(160, 95, 3)
-    print('teste')
     a = cafe.Audio("assets/Som.wav")
+    a:volume(0.2)
     a:play()
 end
 

@@ -1,4 +1,5 @@
 #include "cafe.h"
+#include "mocha.h"
 
 lua_State *L;
 
@@ -196,7 +197,7 @@ int luaopen_file(lua_State *L) {
 }
 
 int l_cafe_file(lua_State *L) {
-    la_file_t **fp = lua_newuserdata(L, sizeof(*fp));
+    la_file_t **fp = lua_newuserdata(L, sizeof(la_file_t*));
     luaL_setmetatable(L, FILE_CLASS);
     const char *path = luaL_checkstring(L, 1);
     int mode = luaL_optnumber(L, 2, 0);
@@ -266,6 +267,7 @@ int luaopen_audio(lua_State *L) {
 	{"play", l_cafe_audio_play},
 	{"stop", l_cafe_audio_stop},
 	{"pause", l_cafe_audio_pause},
+	{"volume", l_cafe_audio_volume},
 	{"__gc", l_cafe_audio__gc},
 	{NULL, NULL}
     };
@@ -282,11 +284,10 @@ int l_cafe_audio(lua_State *L) {
     const char *path = luaL_checkstring(L, 1);
     int usage = luaL_optnumber(L, 2, 0);
 
-    mo_audio_t **audio = lua_newuserdata(L, sizeof(*audio));
+    mo_audio_t **audio = lua_newuserdata(L, sizeof(mo_audio_t*));
     luaL_setmetatable(L, AUDIO_CLASS);
     
     la_file_t *fp = la_fopen(path, LA_READ_MODE);
-    printf("qqqq\n");
     if (!fp) {
 	lua_pushstring(L, "Failed to load audio");
 	lua_error(L);
@@ -295,8 +296,9 @@ int l_cafe_audio(lua_State *L) {
     la_header_t h;
     la_fheader(fp, &h);
 
-    char data[h.size];
+    char *data = malloc(h.size);
     la_fread(fp, data, h.size);
+    free(data);
     la_fclose(fp);
 
     *audio = mo_audio(data, h.size, usage);
@@ -319,6 +321,13 @@ int l_cafe_audio_stop(lua_State *L) {
 int l_cafe_audio_pause(lua_State *L) {
     mo_audio_t **audio = luaL_checkudata(L, 1, AUDIO_CLASS);
     mo_pause(*audio);
+    return 0;
+}
+
+int l_cafe_audio_volume(lua_State *L) {
+    mo_audio_t **audio = luaL_checkudata(L, 1, AUDIO_CLASS);
+    float volume = luaL_optnumber(L, 2, 0);
+    mo_volume(*audio, volume);
     return 0;
 }
 

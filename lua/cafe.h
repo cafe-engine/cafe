@@ -93,6 +93,7 @@ CAFE_API int luaopen_audio(lua_State *L);
 CAFE_API int l_cafe_audio(lua_State *L);
 CAFE_API int l_cafe_audio_play(lua_State *L);
 CAFE_API int l_cafe_audio_pause(lua_State *L);
+CAFE_API int l_cafe_audio_volume(lua_State *L);
 CAFE_API int l_cafe_audio_stop(lua_State *L);
 CAFE_API int l_cafe_audio__gc(lua_State *L);
 
