@@ -13,6 +13,7 @@
 #include "lualib.h"
 
 #define AUDIO_CLASS "Audio"
+#define DATA_CLASS "Data"
 #define TEXTURE_CLASS "Texture"
 #define FILE_CLASS "File"
 #define FONT_CLASS "Font"
@@ -95,6 +96,7 @@ CAFE_API int l_cafe_audio_play(lua_State *L);
 CAFE_API int l_cafe_audio_pause(lua_State *L);
 CAFE_API int l_cafe_audio_volume(lua_State *L);
 CAFE_API int l_cafe_audio_stop(lua_State *L);
+CAFE_API int l_cafe_audio_is_playing(lua_State *L);
 CAFE_API int l_cafe_audio__gc(lua_State *L);
 
 /* Font */

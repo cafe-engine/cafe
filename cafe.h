@@ -6,6 +6,13 @@
 
 #define TEA_TNUM float
 
+typedef struct ca_data_s ca_data_t;
+
+struct ca_data_s {
+    unsigned int size;
+    void *data;
+};
+
 CAFE_API int cafe_init(int argc, char **argv);
 CAFE_API int cafe_deinit();
 

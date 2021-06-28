@@ -267,6 +267,7 @@ int luaopen_audio(lua_State *L) {
 	{"play", l_cafe_audio_play},
 	{"stop", l_cafe_audio_stop},
 	{"pause", l_cafe_audio_pause},
+	{"is_playing", l_cafe_audio_is_playing},
 	{"volume", l_cafe_audio_volume},
 	{"__gc", l_cafe_audio__gc},
 	{NULL, NULL}
@@ -298,7 +299,7 @@ int l_cafe_audio(lua_State *L) {
 
     char *data = malloc(h.size);
     la_fread(fp, data, h.size);
-    free(data);
+    if (usage != MO_AUDIO_STATIC) free(data);
     la_fclose(fp);
 
     *audio = mo_audio(data, h.size, usage);
@@ -329,6 +330,13 @@ int l_cafe_audio_volume(lua_State *L) {
     float volume = luaL_optnumber(L, 2, 0);
     mo_volume(*audio, volume);
     return 0;
+}
+
+int l_cafe_audio_is_playing(lua_State *L) {
+    mo_audio_t **audio = luaL_checkudata(L, 1, AUDIO_CLASS);
+    lua_pushboolean(L, mo_is_playing(*audio));
+
+    return 1;
 }
 
 int l_cafe_audio__gc(lua_State *L) {
