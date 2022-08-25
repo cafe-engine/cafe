@@ -1,104 +1,73 @@
-NAME = cafe
 CC = cc
 AR = ar
+NAME = cafe
+GL_API ?= 32
 CFLAGS = -Wall -std=c99
-LFLAGS =
+LDFLAGS =
+
+TARGET ?= OSX
+
+LUA_FOLDER = external/lua
+
+MENU_BASE_DIR = menu
+
+MENU = tea latte coffee mocha
+MENU_FOLDERS = $(MENU:%=$(MENU_BASE_DIR)/%/)
+MENU_FILES = $(join $(MENU_FOLDERS),$(MENU))
+
+INCLUDE = -I. -Iexternal -Iexternal/lua/src -I$(MENU_BASE_DIR)/mocha/external
+INCLUDE += $(addprefix -I,$(MENU_FOLDERS))
+
+# LUA_SRC = $(wildcard $(LUA_FOLDER)/src/*.c)
+SRC = cafe.c impl.c $(MENU_FILES:%=%.c) $(LUA_SRC)
+# SRC += $(wildcard external/lua/src/*.c) 
+OBJS = $(SRC:.c=.o)
 OUT = $(NAME)
-CLEAR_FILES = 
-
-LUA_SRC = $(wildcard external/lua/src/*.c)
-
-SRC = cafe.c lua/cafe.c $(LUA_SRC)
-MAIN = main.c
-INCLUDE =
-
-ifeq ($(TARGET),Web)
-    CLEAN_FILES = $(NAME).wasm $(NAME).js
-endif
-
-ifeq ($(OS),Windows_NT)
-    TARGET ?= Windows
-    LIB_EXT = dll
-else
-    UNAME_S = $(shell uname -s)
-    ifeq ($(UNAME_S),Darwin)
-    TARGET ?= OSX
-    LIB_EXT = dylib
-    else
-    TARGET ?= $(UNAME_S)
-    endif
-endif
-
-include cross/Makefile.$(TARGET)
 
 LIBNAME = lib$(NAME)
 SLIBNAME = $(LIBNAME).a
-DLIBNAME = $(LIBNAME).$(LIB_EXT)
+DLIBNAME = $(LIBNAME).so
 
-MENU = tea mocha coffee latte
-MENU_FOLDERS = $(MENU:%=menu/%/)
-MENU_FILES = $(join $(MENU_FOLDERS),$(MENU))
+#include cross/Makefile.$(TARGET)
+ifeq ($(OS),Windows_NT)
+        CFLAGS += -D_WIN32
+        LDFLAGS += -mwindows -lopengl32
+else
+        UNAME_S = $(shell uname -s)
+        ifeq ($(UNAME_S),Darwin)
+                LDFLAGS += -framework OpenGL
+        endif
+        ifeq ($(UNAME_S),Linux)
+                LDFLAGS += -lGL
+        endif
+endif
 
-INCLUDE += -Iexternal/lua/src/ $(MENU_FOLDERS:%=-I%) $(MENU_FOLDERS:%=-I%external)
-MENU_OBJ = $(MENU_FILES:%=%.o)
+LDFLAGS += -L. -lcafe
+LDFLAGS += -lm -lSDL2 -ldl
 
-OBJ = $(SRC:%.c=%.o) $(MENU_OBJ)
-DOBJ = cafe.do $(MENU_OBJ:%.o=%.do)
+.PHONY: all build
 
-CLEAN_MENU = $(MENU:%=%.cls)
+build: $(OUT)
+all: $(OUT) $(SLIBNAME)
 
-.PHONY: all build $(MENU)
-.SECONDARY: $(OBJ) $(DOBJ)
+$(OUT): main.c $(SLIBNAME)
+	$(CC) main.c $(CFLAGS) -o $@ $(LDFLAGS) $(INCLUDE)
 
-build: $(NAME)
+$(SLIBNAME): $(OBJS)
+	$(AR) rcs $@ $^
 
-all: $(SLIBNAME) $(DLIBNAME) $(OUT)
+$(DLIBNAME): $(DOBJS)
+	$(CC) -shared $@ $<
 
-$(NAME): $(SLIBNAME) $(MAIN)
-	@echo "********************************************************"
-	@echo "** COMPILING $@"
-	@echo "********************************************************"
-	$(CC) $(MAIN) -o $(OUT) $(INCLUDE) $(CFLAGS) -L. -l$(NAME) $(LFLAGS) $(CDEFS)
-	@echo ""
-
-%.a: $(OBJ)
-	@echo "********************************************************"
-	@echo "** CREATING $@"
-	@echo "********************************************************"
-	$(AR) rcs $@ $(OBJ)
-	@echo ""
-
-%.so: $(DOBJ)
-	@echo "********************************************************"
-	@echo "** CREATING $@"
-	@echo "********************************************************"
-	$(CC) -shared -o $@ $(DOBJ) $(INCLUDE) $(CFLAGS) $(CDEFS)
-	@echo ""
 %.o: %.c
-	@echo "********************************************************"
-	@echo "** $(SLIBNAME): COMPILING SOURCE $<"
-	@echo "********************************************************"
-	@mkdir -p '$(@D)'
-	$(CC) -c $< -o $@ $(INCLUDE) $(CFLAGS) $(CDEFS)
+	$(CC) -c $< -o $@ $(CFLAGS) $(INCLUDE)
 
 %.do: %.c
-	@echo "********************************************************"
-	@echo "** $(DLIBNAME): COMPILING SOURCE $<"
-	@echo "********************************************************"
-	@mkdir -p '$(@D)'
-	$(CC) -c $< -o $@ -fPIC $(INCLUDE) $(CFLAGS) $(CDEFS)
-
-$(MENU):
-	$(MAKE) -C menu/$@
-
-%.cls: menu/%
-	echo $<
-	$(MAKE) clean -C $<
+	$(CC) -c $< -o $@ $(CFLAGS) $(INCLUDE)
 
 clean:
-	rm -rf $(OUT) $(CLEAR_FILES) 
-	rm -rf $(OBJ) $(DOBJ)
-	rm -rf $(DLIBNAME) $(SLIBNAME)
-	rm -rf $(FOLDERS)
+	rm -f $(OBJS)
+	rm -f $(SLIBNAME)
+	rm -f $(CLEAR_FILES)
+	rm -f $(OUT)
 
-clean-all: clean $(CLEAN_MENU)

@@ -1,7 +1,0 @@
-CFLAGS := -Wall -s FORCE_FILESYSTEM=1 -s USE_SDL=2 -s ALLOW_MEMORY_GROWTH=1
-LFLAGS := -lpthread -lm -ldl -lSDL2
-OUT := $(NAME).js
-CLEAR_FILES := cafe.js cafe.wasm
-
-CC := emcc
-AR := emar
