@@ -3,13 +3,17 @@
 Cafe is a tiny single header game framework/engine
 
 
-Cafe is basically a wrap to other single header modules (that you can use as single libs in your projects)
+Cafe engine is made of separated modules:
 
 ## Modules
 - [Tea](https://github.com/cafe-engine/tea): Render module
 - [Mocha](https://github.com/cafe-engine/mocha): Audio module
 - [Coffee](https://github.com/cafe-engine/coffee): Lisp based language
 - [Latte](https://github.com/cafe-engine/latte): Filesystem and Packaging modules
+
+Each module can be used separated in your projects.
+
+`Cafe` uses this modules and SDL2 for input, window, OpenGL context, etc.
 
 TODO:
 
@@ -27,7 +31,7 @@ Just install SDL2 dev lib from your distro base repository (it is present in the
 
 On Debian based distros for example:
 ```
-sudo apt install libsdl2-dev
+sudo apt install gcc make libsdl2-dev
 ```
 
 ### Windows
