@@ -1,9 +1,8 @@
 # Cafe
 
-Cafe is a tiny single header game framework/engine
+Cafe is tiny C engine with focus on portability.
 
-
-Cafe engine is made of separated modules:
+Rhe engine is made of separated modules:
 
 ## Modules
 - [Tea](https://github.com/cafe-engine/tea): Render module
@@ -11,7 +10,7 @@ Cafe engine is made of separated modules:
 - [Coffee](https://github.com/cafe-engine/coffee): Lisp based language
 - [Latte](https://github.com/cafe-engine/latte): Filesystem and Packaging modules
 
-Each module can be used separated in your projects.
+Each module can be used separately in any project.
 
 `Cafe` uses this modules and SDL2 for input, window, OpenGL context, etc.
 
