@@ -19,6 +19,9 @@ void update(float dt)
 {
     if (cafe_keyboard_is_down(CAFEK_LEFT)) x -= 10.f;
     else if (cafe_keyboard_is_down(CAFEK_RIGHT)) x += 10.f;
+
+	if (cafe_keyboard_is_down(CAFEK_UP)) y -= 10.f;
+	else if (cafe_keyboard_is_down(CAFEK_DOWN)) y += 10.f;
     // cafe_graphics_set_canvas(canvas);
     // cafe_graphics_draw_mode(CAFE_FILL);
     // cafe_graphics_set_color(CAFE_RGBA(255, 0, 255, 255));
@@ -27,12 +30,13 @@ void update(float dt)
     // cafe_graphics_set_canvas(NULL);
 
     // cafe_graphics_draw_canvas()
-    ca_Rect dest = {0, 0, 640, 380};
+    ca_Rect dest = {x, y, 64, 64};
     // cafe_graphics_draw_image((ca_Image*)image, &dest, NULL);
     cafe_graphics_clear(CAFE_RGB(0, 0, 0));
 
     cafe_graphics_draw_mode(CAFE_FILL);
     cafe_graphics_draw_circle(x, y+64, 16);
+	cafe_graphics_draw_image(image, &dest, NULL);
     cafe_graphics_draw_rectangle(64, 64, 64, 32);
 }
 
