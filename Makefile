@@ -2,7 +2,7 @@ CC = cc
 AR = ar
 NAME = cafe
 GL_API ?= 32
-CFLAGS = -Wall -std=c99
+CFLAGS = -Wall -std=c99 -g
 LDFLAGS =
 
 TARGET ?= OSX
@@ -43,7 +43,7 @@ else
 endif
 
 LDFLAGS += -L. -lcafe
-LDFLAGS += -lm -lSDL2 -ldl
+LDFLAGS += -lm -lpthread -lSDL2 -ldl
 
 .PHONY: all build
 

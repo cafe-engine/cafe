@@ -439,8 +439,9 @@ typedef ca_f32 ca_Vec3[3];
 typedef ca_f32 ca_Vec4[4];
 typedef ca_Vec4 ca_Mat4[4];
 
-typedef struct ca_Sound ca_Sound;
-typedef struct ca_Music ca_Music;
+typedef struct mo_audio_s ca_Audio;
+typedef ca_Audio ca_Sound;
+typedef ca_Audio ca_Music;
 typedef ca_u32 ca_SoundID;
 
 typedef struct ca_File ca_File;
@@ -477,12 +478,46 @@ CAFE_API void cafe_end(void);
 CAFE_API void cafe_run(ca_StepFunction step);
 
 /*=====================*
- * INPUT FUNCTIONS      *
+ * AUDIO FUNCTIONS     *
+ *=====================*/
+
+CAFE_API int cafe_audio_play(ca_Audio* audio);
+CAFE_API void cafe_audio_stop_all(ca_Audio* audio);
+CAFE_API void cafe_audio_pause_all(ca_Audio* audio);
+
+CAFE_API int cafe_audio_is_any_playing(ca_Audio* audio);
+
+/******************
+ * Audio Instance *
+ ******************/
+
+CAFE_API void cafe_audio_play_instance(int id);
+CAFE_API void cafe_audio_stop_instance(int id);
+CAFE_API void cafe_audio_pause_instance(int id);
+CAFE_API void cafe_audio_set_instance_volume(int id, float volume);
+CAFE_API void cafe_audio_set_instance_loop(int id, int loop);
+
+/*****************
+ * Sound         *
+ *****************/
+CAFE_API ca_Sound* cafe_audio_load_sound(const char* filepath);
+CAFE_API ca_Sound* cafe_audio_new_sound(void* data, int size);
+CAFE_API void cafe_sound_destroy(ca_Sound* sound);
+
+/*****************
+ * Music         *
+ *****************/
+CAFE_API ca_Music* cafe_audio_load_music(const char* filepath);
+CAFE_API ca_Music* cafe_audio_new_music(void* data, int size);
+CAFE_API void cafe_music_destroy(ca_Music* music);
+
+/*=====================*
+ * INPUT FUNCTIONS     *
  *=====================*/
 
 /*****************
  * Keyboard      *
- ****************/
+ *****************/
 
 CAFE_API ca_i32 cafe_keyboard_from_name(const ca_i8* name);
 CAFE_API const ca_i8* cafe_keyboard_get_name(ca_i32 key);
