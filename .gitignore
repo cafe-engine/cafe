@@ -9,3 +9,5 @@ cafe
 *.js
 *.dSYM
 compile_commands.json
+build/
+bin/
