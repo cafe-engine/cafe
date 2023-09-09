@@ -8,8 +8,8 @@ categories = ["rendering", "opengl", "sdl2", "game-frameworks"]
 description = "Game frameworks made on top of SDL2 and OpenGL"
 keywords = ["SDL", "rendering", "engine", "framework", "graphics"]
 authors = ["Canoi Gomes <canoiaguiar@gmail.com>"]
-repository = "https://codeberg.org/cafe/cafe"
-version = "0.1.2"
+repository = "https://github.com/cafe-engine/cafe"
+version = "0.1.3"
 license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
