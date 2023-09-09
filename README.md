@@ -1,58 +1,49 @@
 # Cafe
 
-Cafe is tiny C engine with focus on portability.
+Cafe is game engine/framework, build on top of independent modules:
 
-Rhe engine is made of separated modules:
+- Tea for render
+- Mocha for audio
+- Coffee for scripting (Rust port is a WIP)
+- Latte for filesystem and package (Rust port is a WIP)
 
-## Modules
-- [Tea](https://github.com/cafe-engine/tea): Render module
-- [Mocha](https://github.com/cafe-engine/mocha): Audio module
-- [Coffee](https://github.com/cafe-engine/coffee): Lisp based language
-- [Latte](https://github.com/cafe-engine/latte): Filesystem and Packaging modules
+The other modules i don't started even in C, so i'll start from scratch in Rust:
 
-Each module can be used separately in any project.
+- Milk for UI
+- Cybercafe editor
 
-`Cafe` uses this modules and SDL2 for input, window, OpenGL context, etc.
+Example code:
 
-TODO:
+```Rust
+extern crate cafe;
 
-- Milk: UI module
+use cafe::{Game, CafeBuilder, Render};
+use cafe::render::render2D::Render2D;
 
-## Compile
+pub struct MyGame {}
 
-For build, you need a C compiler, SDL2 and make.
+impl Game for MyGame {
+    type Render = Render2D;
 
-Check the site for download SDL2 runtime binaries or the source code for [build it from yourself](https://www.libsdl.org/download-2.0.php)
+    fn new() -> Self {
+        MyGame {}
+    }
 
-### Linux
+    fn setup(&mut self, _settings: &mut GameSettings) {}
+    fn run(&mut self, _dt: f32, render: &mut Self::Render) -> bool {
+        render.begin();
+        render.clear();
+        render.end();
+        true
+    }
+}
 
-Just install SDL2 dev lib from your distro base repository (it is present in the most used distros).
+fn main() {
+    let cafe = CafeBuilder::new("Hello Game", 640, 380)
+        .resizable(true)
+        .build::<MyGame>()
+        .unwrap();
+    cafe.run();
+}
 
-On Debian based distros for example:
-```
-sudo apt install gcc make libsdl2-dev
-```
-
-### Windows
-
-For compile on Windows, i recommend using [MSYS2](https://www.msys2.org), and install base-devel for make, MinGW for C compiler and the SDL2 libs:
-
-```
-pacman -S --needed base-devel mingw-w64-x86_64-toolchain mingw-w64-x86_64-SDL2
-```
-
-### OSX
-
-The C compiler and `make` you can install using `Command Line Tools` from Xcode.
-I recommend install SDL2 using [Homebrew](https://brew.sh/index_pt-br):
-
-```
-brew install sdl2
-```
-
-### Emscripten
-
-First you need to [setup the environment](https://emscripten.org/docs/getting_started/downloads.html) and do:
-```
-make TARGET=Web
 ```

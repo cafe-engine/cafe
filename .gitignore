@@ -1,13 +1,2 @@
-cafe 
-*.o
-*.a
-*.so
-*.dll
-*.dylib
-*.wasm
-*.html
-*.js
-*.dSYM
-compile_commands.json
-build/
-bin/
+target/
+Cargo.lock
